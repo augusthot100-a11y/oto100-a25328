@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#F5F8FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E141C" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-title" content="音のパッケージ">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎧%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<title>音のパッケージ100</title>
+<style>
+/* ══ tokens : light is the base, dark overrides ══════════════════ */
+:root{
+  --ground:#F5F8FC; --surface:#FFFFFF; --sunk:#EDF2F8; --line:#DCE4EF;
+  --ink:#131C27; --muted:#5D6B7D; --faint:#93A1B2;
+  --accent:#12915A; --accent-ink:#FFFFFF; --now:#B8710A; --now-bg:#FDF3E0;
+  --l1:#2F8FCC; --l2:#12915A; --l3:#B8710A; --l4:#C4567F;
+  --rail:#E2E9F2; --shadow:0 1px 2px rgba(19,28,39,.06),0 8px 24px rgba(19,28,39,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#0E141C; --surface:#18202C; --sunk:#111823; --line:#27313F;
+    --ink:#E9EEF5; --muted:#8896A8; --faint:#5E6C7E;
+    --accent:#3FBF7F; --accent-ink:#062015; --now:#F0A93C; --now-bg:#2A2114;
+    --l1:#57ADE8; --l2:#3FBF7F; --l3:#F0A93C; --l4:#E67BA4;
+    --rail:#1E2734; --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.28);
+  }
+}
+:root[data-theme=light]{
+  --ground:#F5F8FC; --surface:#FFFFFF; --sunk:#EDF2F8; --line:#DCE4EF;
+  --ink:#131C27; --muted:#5D6B7D; --faint:#93A1B2;
+  --accent:#12915A; --accent-ink:#FFFFFF; --now:#B8710A; --now-bg:#FDF3E0;
+  --l1:#2F8FCC; --l2:#12915A; --l3:#B8710A; --l4:#C4567F;
+  --rail:#E2E9F2; --shadow:0 1px 2px rgba(19,28,39,.06),0 8px 24px rgba(19,28,39,.06);
+}
+:root[data-theme=dark]{
+  --ground:#0E141C; --surface:#18202C; --sunk:#111823; --line:#27313F;
+  --ink:#E9EEF5; --muted:#8896A8; --faint:#5E6C7E;
+  --accent:#3FBF7F; --accent-ink:#062015; --now:#F0A93C; --now-bg:#2A2114;
+  --l1:#57ADE8; --l2:#3FBF7F; --l3:#F0A93C; --l4:#E67BA4;
+  --rail:#1E2734; --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.28);
+}
+
+/* ══ base ═══════════════════════════════════════════════════════ */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0;background:var(--ground);color:var(--ink);
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN",-apple-system,
+              BlinkMacSystemFont,"Noto Sans JP",sans-serif;
+  font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;
+  padding-bottom:calc(66px + env(safe-area-inset-bottom));
+}
+.en{font-family:"Avenir Next","Avenir",-apple-system,BlinkMacSystemFont,sans-serif;
+    letter-spacing:-.012em}
+.num{font-variant-numeric:tabular-nums}
+/* span で組んだ2行構成を確実に積む */
+.tcard .p,.tcard .m,.cand .e,.cand .j,.exrow .e,.exrow .j,
+.dc .n,.dc .p,.dc .m{display:block}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:700}
+h2{font-size:16px}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.wrap{max-width:560px;margin:0 auto;padding:14px 15px 20px;
+      display:flex;flex-direction:column;gap:14px}
+.view{display:none}
+.view.on{display:block}
+.eyebrow{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+         color:var(--faint);font-weight:700}
+.muted{color:var(--muted);font-size:13px}
+.hide{display:none!important}
+.card{background:var(--surface);border:1px solid var(--line);
+      border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+
+/* ══ header ═════════════════════════════════════════════════════ */
+.head{display:flex;align-items:center;gap:12px;padding:12px 15px 0;
+      max-width:560px;margin:0 auto}
+.head h1{font-size:15px;letter-spacing:.01em}
+.head h1 i{font-style:normal;color:var(--accent)}
+.head .sp{margin-left:auto}
+.iconbtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);
+         background:var(--surface);color:var(--muted);font-size:16px;
+         display:grid;place-items:center}
+
+/* ══ progress summary ═══════════════════════════════════════════ */
+.summary{display:flex;align-items:flex-end;gap:14px}
+.count{font-size:46px;font-weight:800;line-height:.95;letter-spacing:-.03em}
+.count s{text-decoration:none;font-size:16px;color:var(--muted);font-weight:600}
+.rail{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden;margin-top:14px}
+.rail i{display:block;height:100%;background:var(--accent);border-radius:99px;
+        transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.facts{display:flex;gap:6px;margin-top:12px}
+.fact{flex:1;background:var(--sunk);border-radius:11px;padding:9px 6px;text-align:center}
+.fact b{display:block;font-size:19px;font-weight:800;line-height:1.2}
+.fact span{font-size:10.5px;color:var(--muted)}
+
+/* ══ buttons ════════════════════════════════════════════════════ */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+     min-height:52px;border-radius:14px;font-size:15px;font-weight:700;
+     background:var(--accent);color:var(--accent-ink);transition:transform .1s}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.45}
+.btn.sub{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn.sm{min-height:42px;font-size:13.5px;border-radius:11px;width:auto;padding:0 16px}
+.btnrow{display:flex;gap:8px}
+
+/* ══ today ══════════════════════════════════════════════════════ */
+.tcard{display:flex;align-items:center;gap:12px;background:var(--surface);
+       border:1px solid var(--line);border-radius:14px;padding:13px 14px;
+       width:100%;text-align:left;box-shadow:var(--shadow)}
+.tcard .dot{width:8px;height:38px;border-radius:99px;flex:none}
+.tcard .g{flex:1;min-width:0}
+.tcard .p{font-size:17px;font-weight:700;line-height:1.3}
+.tcard .m{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;
+          white-space:nowrap}
+.tcard .st{font-size:11px;color:var(--faint);font-weight:700;flex:none}
+.tcard.done .p,.tcard.done .m{opacity:.5}
+
+/* ══ board : 5-wide vertical climb ══════════════════════════════ */
+.board{display:flex;flex-direction:column;padding:14px 0 18px;background:var(--sunk);
+  border-radius:14px;margin-top:10px;border:1px solid var(--line)}
+.brow{position:relative;display:flex;justify-content:center;padding:9px 0}
+.btrack{position:relative;display:flex;gap:9px}
+.btrack::before{content:"";position:absolute;left:-13px;right:-13px;top:50%;
+  height:13px;background:var(--rail);border-radius:99px;transform:translateY(-50%)}
+.btrack::after{content:"";position:absolute;top:50%;bottom:-34px;width:13px;
+  background:var(--rail)}
+.brow.r .btrack::after{right:-13px;border-radius:0 0 99px 0}
+.brow.l .btrack::after{left:-13px;border-radius:0 0 0 99px}
+.brow:last-child .btrack::after{display:none}
+.tile{position:relative;z-index:1;width:50px;height:50px;border-radius:15px;
+      display:grid;place-items:center;font-size:13px;font-weight:800;
+      background:var(--surface);border:2px solid var(--line);color:var(--faint)}
+.tile.l1{border-color:var(--l1)} .tile.l2{border-color:var(--l2)}
+.tile.l3{border-color:var(--l3)} .tile.l4{border-color:var(--l4)}
+.tile.done{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tile.mile{border-radius:50%}
+.tile.now{border-color:var(--now);color:var(--now);background:var(--now-bg);
+          box-shadow:0 0 0 4px var(--now-bg)}
+.pin{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-size:21px;
+     animation:bob 1.9s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-5px)}}
+.flagm{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--muted);
+        margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;
+          border:2px solid;margin-right:5px;vertical-align:-1px}
+
+/* ══ dex ════════════════════════════════════════════════════════ */
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;
+       scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);
+      color:var(--muted);border-radius:99px;padding:8px 15px;font-size:12.5px;
+      font-weight:700;min-height:38px}
+.chip.on{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dc{position:relative;background:var(--surface);border:1px solid var(--line);
+    border-radius:13px;padding:11px 10px 10px;min-height:96px;text-align:left;
+    display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.dc .bar{position:absolute;left:0;top:0;bottom:0;width:3px}
+.dc .n{font-size:9.5px;letter-spacing:.09em;color:var(--faint);font-weight:800}
+.dc .p{font-size:13px;font-weight:700;line-height:1.3;word-break:break-word}
+.dc .m{font-size:10px;color:var(--muted);line-height:1.35;overflow:hidden;
+       display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.dc.got{border-color:var(--accent)}
+.dc.got .tick{position:absolute;top:8px;right:9px;color:var(--accent);
+              font-size:11px;font-weight:900}
+.dc.lock .p{color:var(--faint);letter-spacing:.2em}
+
+/* ══ study ══════════════════════════════════════════════════════ */
+.pkghead{background:var(--surface);border:1px solid var(--line);border-radius:16px;
+         padding:16px;box-shadow:var(--shadow)}
+.pkghead .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tag{font-size:10px;font-weight:800;letter-spacing:.06em;padding:3px 8px;
+     border-radius:99px;background:var(--sunk);color:var(--muted)}
+.pat{font-size:27px;font-weight:700;line-height:1.2}
+.mean{color:var(--muted);font-size:13.5px;margin-top:2px}
+.segs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:13px}
+.seg{flex:1;min-height:44px;border-radius:10px;font-size:12px;font-weight:700;
+     color:var(--muted);display:flex;flex-direction:column;justify-content:center;
+     line-height:1.25;gap:1px}
+.seg b{font-size:10px;font-weight:800;color:var(--faint)}
+.seg.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.seg.ok b{color:var(--accent)}
+.pane{display:none} .pane.on{display:block}
+.exrow{display:flex;align-items:center;gap:10px;padding:12px 0;
+       border-top:1px solid var(--line)}
+.exrow:first-of-type{border-top:0}
+.exrow .g{flex:1;min-width:0}
+.exrow .e{font-size:15px;font-weight:600;line-height:1.45}
+.exrow .j{font-size:12px;color:var(--muted);margin-top:1px}
+.play{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);
+      background:var(--sunk);font-size:15px;flex:none;display:grid;place-items:center}
+textarea,input[type=text]{width:100%;background:var(--sunk);border:1px solid var(--line);
+  border-radius:12px;padding:12px;font-size:16px;line-height:1.6;resize:vertical}
+.lbl{display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+     color:var(--faint);font-weight:700;margin:14px 0 6px}
+.cand{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+      background:var(--sunk);border:1px solid var(--line);border-radius:12px;
+      padding:11px 12px;margin-top:7px}
+.cand .g{flex:1;min-width:0}
+.cand .e{font-size:14px;font-weight:600;line-height:1.4}
+.cand .j{font-size:11.5px;color:var(--muted)}
+.cand .use{font-size:11px;font-weight:800;color:var(--accent);flex:none}
+
+/* counter */
+.ringwrap{position:relative;width:172px;height:172px;margin:8px auto 4px}
+.ringwrap svg{transform:rotate(-90deg)}
+.ringwrap circle{fill:none;stroke-width:10;stroke-linecap:round}
+.rbg{stroke:var(--sunk)}
+.rfg{stroke:var(--now);stroke-dasharray:352;stroke-dashoffset:352;
+     transition:stroke-dashoffset .5s cubic-bezier(.2,.8,.2,1)}
+.rtxt{position:absolute;inset:0;display:grid;place-items:center;align-content:center}
+.rtxt b{font-size:52px;font-weight:800;line-height:1}
+.rtxt span{font-size:12px;color:var(--muted);font-weight:700}
+.banner{border-radius:13px;padding:13px;text-align:center;font-weight:700;
+        background:var(--sunk);color:var(--accent);border:1px solid var(--accent)}
+
+/* ══ test ═══════════════════════════════════════════════════════ */
+.tprog{text-align:center;font-size:12.5px;color:var(--muted)}
+.tprog b{color:var(--now);font-size:15px;font-weight:800}
+#tin{text-align:center;font-size:17px;margin:14px 0}
+.judge{border-radius:13px;padding:13px 14px;margin-top:14px;font-size:13.5px}
+.judge.ok{background:var(--sunk);border:1px solid var(--accent)}
+.judge.ng{background:var(--sunk);border:1px solid var(--l4)}
+.judge .a{font-size:16px;font-weight:700;margin-top:5px;line-height:1.45}
+.w{padding:1px 3px;border-radius:5px}
+.w.miss{background:var(--l4);color:var(--surface)}
+.big{font-size:42px;font-weight:800;text-align:center;line-height:1.1}
+
+/* ══ nav ════════════════════════════════════════════════════════ */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;
+     background:var(--surface);backdrop-filter:blur(14px);border-top:1px solid var(--line);
+     padding-bottom:env(safe-area-inset-bottom)}
+.nav button{flex:1;padding:9px 0 10px;display:flex;flex-direction:column;
+            align-items:center;gap:3px;font-size:10.5px;font-weight:700;
+            color:var(--faint);min-height:56px;justify-content:center}
+.nav button i{font-style:normal;font-size:19px;line-height:1}
+.nav button.on{color:var(--accent)}
+
+/* ══ sheet ══════════════════════════════════════════════════════ */
+.sheet{position:fixed;inset:0;z-index:80;background:rgba(8,12,18,.55);
+       display:flex;align-items:flex-end;justify-content:center;padding:0}
+.sheet .in{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 17px
+           calc(24px + env(safe-area-inset-bottom));width:100%;max-width:560px;
+           max-height:86vh;overflow:auto;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(22px);opacity:.4}to{transform:none;opacity:1}}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;
+    border-top:1px solid var(--line);font-size:13px}
+.kv span:first-child{color:var(--muted);flex:none}
+.kv span:last-child{text-align:right}
+</style>
+
+<div class="head">
+  <h1>音のパッケージ<i>100</i></h1>
+  <button class="iconbtn sp" id="gear" aria-label="設定">⚙</button>
+</div>
+
+<!-- ═══ ホーム ═══ -->
+<main id="v-home" class="view on"><div class="wrap">
+  <section class="card">
+    <div class="eyebrow">これまでの積み上げ</div>
+    <div class="summary">
+      <div class="count num"><span id="k-done">0</span><s> / 100</s></div>
+    </div>
+    <div class="rail"><i id="k-rail"></i></div>
+    <div class="facts">
+      <div class="fact"><b class="num" id="k-streak">0</b><span>日連続</span></div>
+      <div class="fact"><b class="num" id="k-reads">0</b><span>回 音読</span></div>
+      <div class="fact"><b class="num" id="k-my">0</b><span>自分ごと</span></div>
+    </div>
+  </section>
+
+  <button class="btn" id="roll">🎲 今日の3個を選ぶ</button>
+  <div id="today"></div>
+
+  <section class="card">
+    <div class="eyebrow">すごろく</div>
+    <div style="display:flex;align-items:center;gap:10px;margin:2px 0 2px">
+      <h2>No.1 から順に進みます</h2>
+      <button class="chip" id="jump" style="margin-left:auto">現在地へ</button>
+    </div>
+    <div class="muted">コマ 🚶 の位置が今の現在地です</div>
+    <div class="board" id="board"></div>
+    <div class="legend">
+      <span><i style="border-color:var(--l1)"></i>レベル1</span>
+      <span><i style="border-color:var(--l2)"></i>レベル2</span>
+      <span><i style="border-color:var(--l3)"></i>レベル3</span>
+      <span><i style="border-color:var(--l4)"></i>レベル4</span>
+      <span><i style="background:var(--accent);border-color:var(--accent)"></i>クリア済み</span>
+    </div>
+  </section>
+</div></main>
+
+<!-- ═══ 図鑑 ═══ -->
+<main id="v-dex" class="view"><div class="wrap">
+  <section class="card">
+    <div class="eyebrow">図鑑</div>
+    <div class="summary"><div class="count num"><span id="d-done">0</span><s> / 100 収集</s></div></div>
+  </section>
+  <div class="chips" id="chips"></div>
+  <div class="grid" id="grid"></div>
+</div></main>
+
+<!-- ═══ 学習 ═══ -->
+<main id="v-study" class="view"><div class="wrap">
+  <button class="btn sub sm" id="back" style="align-self:flex-start">← 戻る</button>
+
+  <section class="pkghead">
+    <div class="top">
+      <span class="tag num" id="s-no">NO.001</span>
+      <span class="tag" id="s-lv">レベル1</span>
+    </div>
+    <div class="pat en" id="s-pat">—</div>
+    <div class="mean" id="s-mean">—</div>
+    <div class="btnrow" style="margin-top:12px">
+      <button class="btn sm" id="s-say" style="flex:1">▶ 聞く</button>
+      <button class="btn sub sm" id="s-slow" style="flex:1">🐢 ゆっくり</button>
+    </div>
+  </section>
+
+  <div class="segs" id="segs"></div>
+
+  <!-- 1 -->
+  <section class="card pane on" data-p="1">
+    <h2>ネイティブの音を聞く</h2>
+    <p class="muted" style="margin:4px 0 6px">通常とゆっくりで聞き、口の動きを真似してください。</p>
+    <div id="s-ex"></div>
+  </section>
+
+  <!-- 2 -->
+  <section class="card pane" data-p="2">
+    <h2>実際の使われ方を確かめる</h2>
+    <p class="muted" style="margin:4px 0 12px">YouGlishが別のタブで開き、YouTube動画の中でこのフレーズがどう発音されているか検索します。</p>
+    <button class="btn" id="s-yg">🔍 YouGlishで開く</button>
+  </section>
+
+  <!-- 3 -->
+  <section class="card pane" data-p="3">
+    <h2>自分ごとの例文をつくる</h2>
+    <p class="muted" style="margin:4px 0 10px">自分の生活や感情に紐づけると記憶に残ります。テーマを選ぶと下書きが出ます。</p>
+    <div class="chips" id="s-themes"></div>
+    <div id="s-cands"></div>
+    <label class="lbl" for="s-en">自分ごとの例文</label>
+    <textarea id="s-en" rows="2" placeholder="英語で入力（上の候補を押すと入ります）"></textarea>
+    <textarea id="s-ja" rows="2" placeholder="日本語のメモ（任意）" style="margin-top:8px"></textarea>
+    <div class="btnrow" style="margin-top:10px">
+      <button class="btn sm" id="s-save" style="flex:1">保存する</button>
+      <button class="btn sub sm" id="s-myplay" style="flex:1">▶ 自分の例文を聞く</button>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="card pane" data-p="4">
+    <h2>感情をのせて10回声に出す</h2>
+    <p class="muted" style="margin:4px 0 0">目の前に相手がいると想定して、表情とジェスチャーをつけて声に出してください。</p>
+    <div class="ringwrap">
+      <svg viewBox="0 0 120 120" width="172" height="172" aria-hidden="true">
+        <circle class="rbg" cx="60" cy="60" r="56"></circle>
+        <circle class="rfg" id="ring" cx="60" cy="60" r="56"></circle>
+      </svg>
+      <div class="rtxt"><b class="num" id="s-cnt">0</b><span>/ 10 回</span></div>
+    </div>
+    <button class="btn" id="s-rep">🔊 聞いて、声に出した</button>
+    <button class="btn sub sm" id="s-reset" style="margin:8px auto 0">回数をリセット</button>
+    <div class="banner hide" id="s-clear" style="margin-top:12px">🎉 クリアしました</div>
+  </section>
+</div></main>
+
+<!-- ═══ テスト ═══ -->
+<main id="v-test" class="view"><div class="wrap">
+  <section class="card" id="t-home">
+    <div class="eyebrow">リスニングテスト</div>
+    <h2 style="margin:2px 0 6px">聞こえた英文を入力します</h2>
+    <p class="muted" style="margin:0 0 12px">クリア済みの例文と、自分で作った例文から出題されます。大文字と句読点の違いは正解として扱います。</p>
+    <button class="btn" id="t-start">はじめる</button>
+    <div class="muted" id="t-avail" style="text-align:center;margin-top:8px"></div>
+  </section>
+
+  <section class="card hide" id="t-box">
+    <div class="tprog">第 <b class="num" id="t-i">1</b> 問 / <span class="num" id="t-n">10</span>　　正解 <b class="num" id="t-sc">0</b></div>
+    <button class="btn" id="t-play" style="margin-top:12px">🔊 もう一度聞く</button>
+    <button class="btn sub sm" id="t-slow" style="margin:8px auto 0">🐢 ゆっくり</button>
+    <input type="text" id="tin" placeholder="聞こえた英文" autocomplete="off"
+           autocapitalize="off" autocorrect="off" spellcheck="false">
+    <div class="btnrow">
+      <button class="btn sm" id="t-check" style="flex:1">答え合わせ</button>
+      <button class="btn sub sm" id="t-skip" style="flex:1">わからない</button>
+    </div>
+    <div id="t-res"></div>
+  </section>
+
+  <section class="card hide" id="t-end">
+    <h2 id="t-title" style="text-align:center">結果</h2>
+    <div id="t-body"></div>
+    <button class="btn" id="t-again" style="margin-top:14px">もう一度</button>
+  </section>
+</div></main>
+
+<nav class="nav" id="nav"></nav>
+<div class="sheet hide" id="sheet"><div class="in" id="sheet-in"></div></div>
+
+<script>
+const PKGS = [{"no":1,"level":1,"pattern":"I'm gonna ~","meaning":"〜するつもり／〜する予定","examples":[{"en":"I'm gonna grab some coffee.","ja":"コーヒー買ってくる。"},{"en":"I'm gonna call him later.","ja":"後で彼に電話する。"},{"en":"I'm gonna take the day off tomorrow.","ja":"明日は休みにする。"}]},{"no":2,"level":1,"pattern":"I have to ~","meaning":"〜しなければならない","examples":[{"en":"I have to finish this by tonight.","ja":"今夜中にこれを終わらせないといけない。"},{"en":"I have to pick up my kid.","ja":"子供を迎えに行かないといけない。"},{"en":"I have to be honest with you.","ja":"正直に言わないといけない。"}]},{"no":3,"level":1,"pattern":"I want to ~","meaning":"〜したい","examples":[{"en":"I want to try that new restaurant.","ja":"あの新しいレストランを試してみたい。"},{"en":"I want to get better at cooking.","ja":"料理が上手くなりたい。"},{"en":"I want to take a break.","ja":"ちょっと休憩したい。"}]},{"no":4,"level":1,"pattern":"I need to ~","meaning":"〜する必要がある","examples":[{"en":"I need to get some sleep.","ja":"ちょっと寝ないといけない。"},{"en":"I need to think about it.","ja":"考える必要がある。"},{"en":"I need to talk to you about something.","ja":"ちょっと話したいことがある。"}]},{"no":5,"level":1,"pattern":"I'm trying to ~","meaning":"〜しようとしている／頑張っている","examples":[{"en":"I'm trying to eat healthier.","ja":"最近、食生活を改善しようとしてる。"},{"en":"I'm trying to save money.","ja":"お金を貯めようとしてる。"},{"en":"I'm trying to figure out what to do.","ja":"どうすればいいか考えようとしてる。"}]},{"no":6,"level":1,"pattern":"I used to ~","meaning":"以前は〜していた（今はもうしていない）","examples":[{"en":"I used to live in Osaka.","ja":"以前は大阪に住んでた。"},{"en":"I used to go to the gym every day.","ja":"毎日ジムに行ってた時期があった。"},{"en":"I used to hate vegetables.","ja":"昔は野菜が嫌いだった。"}]},{"no":7,"level":1,"pattern":"I've got to ~","meaning":"〜しなきゃ（I have toのくだけた表現）","examples":[{"en":"I've got to run.","ja":"もう行かないと。"},{"en":"I've got to get this done today.","ja":"今日中にこれ終わらせないと。"},{"en":"I've got to tell you something.","ja":"ちょっと話があるんだけど。"}]},{"no":8,"level":1,"pattern":"I'm about to ~","meaning":"今まさに〜しようとしているところ","examples":[{"en":"I'm about to head out.","ja":"今まさに出かけるところ。"},{"en":"I'm about to eat.","ja":"ちょうど今ご飯食べようとしてた。"},{"en":"I'm about to send you the file.","ja":"今ファイル送るところ。"}]},{"no":9,"level":1,"pattern":"I ended up ~ing","meaning":"結局〜することになった","examples":[{"en":"I ended up staying home.","ja":"結局家にいることになった。"},{"en":"I ended up eating too much.","ja":"結局食べすぎちゃった。"},{"en":"I ended up canceling my plans.","ja":"結局予定をキャンセルした。"}]},{"no":10,"level":1,"pattern":"I feel like ~ing","meaning":"〜したい気分だ","examples":[{"en":"I feel like going for a walk.","ja":"散歩したい気分。"},{"en":"I feel like having ramen tonight.","ja":"今夜はラーメンの気分。"},{"en":"I feel like doing nothing today.","ja":"今日は何もしたくない気分。"}]},{"no":11,"level":1,"pattern":"I'm thinking about ~ing","meaning":"〜しようかなと思っている","examples":[{"en":"I'm thinking about switching jobs.","ja":"転職しようかなと考えてる。"},{"en":"I'm thinking about moving to a new apartment.","ja":"新しいアパートに引っ越そうかなと思ってる。"},{"en":"I'm thinking about taking a trip this summer.","ja":"この夏、旅行しようかなと思ってる。"}]},{"no":12,"level":1,"pattern":"I was about to ~","meaning":"ちょうど〜しようとしていたところ","examples":[{"en":"I was about to call you.","ja":"ちょうど電話しようとしてた。"},{"en":"I was about to head out when it started raining.","ja":"ちょうど出かけようとしたら雨が降り出した。"},{"en":"I was about to reply to your message.","ja":"ちょうど返信しようとしてたとこ。"}]},{"no":13,"level":1,"pattern":"I'm gonna have to ~","meaning":"〜しなければならなくなりそう","examples":[{"en":"I'm gonna have to cancel our plans.","ja":"予定キャンセルしないといけなくなりそう。"},{"en":"I'm gonna have to wake up early tomorrow.","ja":"明日早起きしないといけない。"},{"en":"I'm gonna have to think about it more.","ja":"もう少し考えないといけない。"}]},{"no":14,"level":1,"pattern":"I'm supposed to ~","meaning":"〜することになっている","examples":[{"en":"I'm supposed to meet him at 3. 3","ja":"時に彼と会うことになってる。"},{"en":"I'm supposed to submit the report by Friday.","ja":"金曜までにレポートを提出することになってる。"},{"en":"I'm supposed to call her back today.","ja":"今日彼女に折り返しの電話をすることになってる。"}]},{"no":15,"level":1,"pattern":"I have no idea ~","meaning":"〜が全くわからない","examples":[{"en":"I have no idea what to say.","ja":"何て言えばいいかわからない。"},{"en":"I have no idea where he went.","ja":"彼がどこに行ったか全然わからない。"},{"en":"I have no idea what I'm doing.","ja":"自分が何してるのか全然わかってない。"}]},{"no":16,"level":2,"pattern":"I can't wait to ~","meaning":"〜するのが待ちきれない","examples":[{"en":"I can't wait to see you.","ja":"会えるのが楽しみすぎる。"},{"en":"I can't wait to try that place.","ja":"あのお店試すの楽しみ。"},{"en":"I can't wait to go on vacation.","ja":"休暇が楽しみすぎる。"}]},{"no":17,"level":2,"pattern":"I'm looking forward to ~ing","meaning":"〜を楽しみにしている","examples":[{"en":"I'm looking forward to meeting you.","ja":"お会いするのを楽しみにしています。"},{"en":"I'm looking forward to the weekend.","ja":"週末が楽しみ。"},{"en":"I'm looking forward to working with you.","ja":"一緒に仕事するのを楽しみにしています。"}]},{"no":18,"level":2,"pattern":"I'm dying to ~","meaning":"〜したくてたまらない","examples":[{"en":"I'm dying to try that new restaurant.","ja":"あの新しいレストラン行きたくてたまらない。"},{"en":"I'm dying to know what happened.","ja":"何があったか知りたくてたまらない。"},{"en":"I'm dying to take a vacation.","ja":"休暇取りたくてたまらない。"}]},{"no":19,"level":2,"pattern":"I'm hoping to ~","meaning":"〜できればと思っている","examples":[{"en":"I'm hoping to get a promotion this year.","ja":"今年昇進できればと思ってる。"},{"en":"I'm hoping to finish early today.","ja":"今日早く終われればと思ってる。"},{"en":"I'm hoping to hear back from them soon.","ja":"早めに返事もらえればと思ってる。"}]},{"no":20,"level":2,"pattern":"I'm planning on ~ing","meaning":"〜する予定だ","examples":[{"en":"I'm planning on going to Kyoto next month.","ja":"来月京都に行く予定。"},{"en":"I'm planning on starting a new project.","ja":"新しいプロジェクトを始める予定。"},{"en":"I'm planning on taking a cooking class.","ja":"料理教室に通う予定。"}]},{"no":21,"level":2,"pattern":"I'm considering ~ing","meaning":"〜することを検討している","examples":[{"en":"I'm considering changing my career.","ja":"キャリアチェンジを検討してる。"},{"en":"I'm considering getting a dog.","ja":"犬を飼おうか検討してる。"},{"en":"I'm considering moving to a bigger place.","ja":"もっと広い場所に引っ越すか検討してる。"}]},{"no":22,"level":2,"pattern":"I was going to ~, but ~","meaning":"〜するつもりだったけど〜","examples":[{"en":"I was going to call you, but I forgot.","ja":"電話しようとしてたんだけど忘れちゃった。"},{"en":"I was going to cook dinner, but I ended up ordering out.","ja":"夕食作るつもりだったけど、結局出前頼んだ。"},{"en":"I was going to go to the gym, but I was too tired.","ja":"ジム行くつもりだったけど疲れすぎてた。"}]},{"no":23,"level":2,"pattern":"I tend to ~","meaning":"〜する傾向がある・つい〜してしまう","examples":[{"en":"I tend to overthink things.","ja":"つい考えすぎてしまう。"},{"en":"I tend to stay up late.","ja":"夜更かしする傾向がある。"},{"en":"I tend to forget names.","ja":"名前を忘れがち。"}]},{"no":24,"level":2,"pattern":"I wish I had ~","meaning":"あの時〜していたらよかった","examples":[{"en":"I wish I had studied harder.","ja":"もっと勉強しておけばよかった。"},{"en":"I wish I had brought an umbrella.","ja":"傘持ってくればよかった。"},{"en":"I wish I had taken that job offer.","ja":"あの仕事のオファー受けておけばよかった。"}]},{"no":25,"level":2,"pattern":"I can't help but ~","meaning":"〜せずにはいられない","examples":[{"en":"I can't help but laugh.","ja":"笑わずにはいられない。"},{"en":"I can't help but worry about it.","ja":"気になってしょうがない。"},{"en":"I can't help but check my phone.","ja":"スマホ見ずにいられない。"}]},{"no":26,"level":2,"pattern":"I'd rather ~","meaning":"どちらかといえば〜したい","examples":[{"en":"I'd rather stay home tonight.","ja":"今夜はどちらかというと家にいたい。"},{"en":"I'd rather not talk about it.","ja":"それについては話したくない。"},{"en":"I'd rather take the train.","ja":"電車の方がいい。"}]},{"no":27,"level":2,"pattern":"I might as well ~","meaning":"せっかくだから〜してしまおう","examples":[{"en":"I might as well go now.","ja":"せっかくだから今行ってしまおう。"},{"en":"I might as well try it.","ja":"どうせなら試してみよう。"},{"en":"I might as well finish it tonight.","ja":"どうせなら今夜終わらせてしまおう。"}]},{"no":28,"level":2,"pattern":"I'm not in the mood to ~","meaning":"〜する気分じゃない","examples":[{"en":"I'm not in the mood to cook.","ja":"料理する気分じゃない。"},{"en":"I'm not in the mood to go out.","ja":"外出する気分じゃない。"},{"en":"I'm not in the mood to talk right now.","ja":"今は話す気分じゃない。"}]},{"no":29,"level":2,"pattern":"I'm so done with ~","meaning":"〜にはもう完全に飽きた・うんざりした","examples":[{"en":"I'm so done with this project.","ja":"このプロジェクトにはもううんざり。"},{"en":"I'm so done with excuses.","ja":"言い訳にはもうげんなり。"},{"en":"I'm so done with cold weather.","ja":"寒い天気にはもう飽き飽き。"}]},{"no":30,"level":2,"pattern":"I keep ~ing","meaning":"〜し続けている・ついつい〜してしまう","examples":[{"en":"I keep forgetting to reply.","ja":"返信するのをついつい忘れてしまう。"},{"en":"I keep checking my phone.","ja":"スマホをずっとチェックしてしまう。"},{"en":"I keep running into him.","ja":"彼にばかり偶然会ってしまう。"}]},{"no":31,"level":2,"pattern":"Do you want me to ~?","meaning":"〜しようか？","examples":[{"en":"Do you want me to pick you up?","ja":"迎えに行こうか？"},{"en":"Do you want me to send you the file?","ja":"ファイル送ろうか？"},{"en":"Do you want me to help you with that?","ja":"それ手伝おうか？"}]},{"no":32,"level":2,"pattern":"Would you mind ~ing?","meaning":"〜してもらえますか？（丁寧な依頼）","examples":[{"en":"Would you mind closing the window?","ja":"窓を閉めてもらえますか？"},{"en":"Would you mind waiting a moment?","ja":"少し待っていただけますか？"},{"en":"Would you mind explaining that again?","ja":"もう一度説明してもらえますか？"}]},{"no":33,"level":2,"pattern":"Is it okay if I ~?","meaning":"〜してもいいですか？","examples":[{"en":"Is it okay if I leave early today?","ja":"今日早退してもいいですか？"},{"en":"Is it okay if I bring a friend?","ja":"友達を連れてきてもいいですか？"},{"en":"Is it okay if I call you later?","ja":"後で電話してもいいですか？"}]},{"no":34,"level":2,"pattern":"Do you feel like ~ing?","meaning":"〜したい気分？","examples":[{"en":"Do you feel like grabbing lunch?","ja":"ランチ行く気分？"},{"en":"Do you feel like watching a movie?","ja":"映画見る気分？"},{"en":"Do you feel like going for a walk?","ja":"散歩したい気分？"}]},{"no":35,"level":2,"pattern":"Are you okay with ~?","meaning":"〜で大丈夫？","examples":[{"en":"Are you okay with meeting at 3? 3","ja":"時に会うので大丈夫？"},{"en":"Are you okay with eating Italian?","ja":"イタリアンで大丈夫？"},{"en":"Are you okay with working from home today?","ja":"今日リモートワークで大丈夫？"}]},{"no":36,"level":2,"pattern":"Do you happen to ~?","meaning":"もしかして〜しますか？","examples":[{"en":"Do you happen to know him?","ja":"もしかして彼のこと知ってる？"},{"en":"Do you happen to have a pen?","ja":"もしよかったらペン持ってたりする？"},{"en":"Do you happen to speak Spanish?","ja":"もしかしてスペイン語話せたりする？"}]},{"no":37,"level":2,"pattern":"Are you sure ~?","meaning":"本当に〜？／確かに〜？","examples":[{"en":"Are you sure about that?","ja":"それ本当に大丈夫？"},{"en":"Are you sure you want to go?","ja":"本当に行きたい？"},{"en":"Are you sure you don't need help?","ja":"本当に助けはいらない？"}]},{"no":38,"level":2,"pattern":"Let me know if ~","meaning":"〜だったら教えて","examples":[{"en":"Let me know if you need anything.","ja":"何か必要だったら教えて。"},{"en":"Let me know if you're free this weekend.","ja":"今週末暇だったら教えて。"},{"en":"Let me know if you have any questions.","ja":"何か質問があれば教えて。"}]},{"no":39,"level":2,"pattern":"Feel free to ~","meaning":"遠慮なく〜してください","examples":[{"en":"Feel free to ask me anything.","ja":"何でも遠慮なく聞いてください。"},{"en":"Feel free to use my desk.","ja":"私の机を自由に使ってください。"},{"en":"Feel free to reach out anytime.","ja":"いつでも気軽に連絡してください。"}]},{"no":40,"level":2,"pattern":"Make sure to ~","meaning":"必ず〜してください","examples":[{"en":"Make sure to lock the door.","ja":"必ずドアに鍵をかけて。"},{"en":"Make sure to bring your ID.","ja":"身分証を忘れずに持ってきて。"},{"en":"Make sure to save your work.","ja":"作業を必ず保存しておいて。"}]},{"no":41,"level":2,"pattern":"Don't forget to ~","meaning":"〜するのを忘れないで","examples":[{"en":"Don't forget to call me back.","ja":"折り返し電話するの忘れないでね。"},{"en":"Don't forget to bring your lunch.","ja":"お弁当持ってくるの忘れないで。"},{"en":"Don't forget to turn off the lights.","ja":"電気を消すの忘れないで。"}]},{"no":42,"level":2,"pattern":"Go ahead and ~","meaning":"どうぞ〜してください","examples":[{"en":"Go ahead and start without me.","ja":"私を待たずに始めてください。"},{"en":"Go ahead and take a seat.","ja":"どうぞお座りください。"},{"en":"Go ahead and send me the details.","ja":"詳細を送ってもらって大丈夫です。"}]},{"no":43,"level":2,"pattern":"Keep in mind that ~","meaning":"〜ということを覚えておいて","examples":[{"en":"Keep in mind that the deadline is Friday.","ja":"締め切りが金曜だということを覚えておいて。"},{"en":"Keep in mind that it might take a while.","ja":"少し時間がかかるかもしれないことを覚えておいて。"},{"en":"Keep in mind that everyone has different opinions.","ja":"みんな意見が違うということを念頭においてね。"}]},{"no":44,"level":2,"pattern":"I just wanted to ~","meaning":"ちょっと〜したかっただけ","examples":[{"en":"I just wanted to say thank you.","ja":"ちょっとお礼が言いたかっただけ。"},{"en":"I just wanted to check in.","ja":"ちょっと様子を聞きたかっただけ。"},{"en":"I just wanted to let you know.","ja":"ちょっと知らせておきたかっただけ。"}]},{"no":45,"level":2,"pattern":"Can I go ahead and ~?","meaning":"〜してしまっていいですか？","examples":[{"en":"Can I go ahead and order for both of us?2","ja":"人分注文してしまっていいですか？"},{"en":"Can I go ahead and send this?","ja":"これ送ってしまっていいですか？"},{"en":"Can I go ahead and get started?","ja":"始めてしまっていいですか？"}]},{"no":46,"level":2,"pattern":"It depends on ~","meaning":"〜による","examples":[{"en":"It depends on the situation.","ja":"状況によるかな。"},{"en":"It depends on how you look at it.","ja":"見方によるよね。"},{"en":"It depends on the weather.","ja":"天気次第かな。"}]},{"no":47,"level":2,"pattern":"It turns out ~","meaning":"実は〜だとわかった","examples":[{"en":"It turns out he was right.","ja":"実は彼が正しかった。"},{"en":"It turns out the meeting was canceled.","ja":"実は会議がキャンセルになってた。"},{"en":"It turns out I left my wallet at home.","ja":"実は財布を家に忘れてきてた。"}]},{"no":48,"level":2,"pattern":"It seems like ~","meaning":"〜のようだ・〜な感じがする","examples":[{"en":"It seems like it's going to rain.","ja":"雨が降りそうな感じ。"},{"en":"It seems like he's not coming.","ja":"彼は来ないみたい。"},{"en":"It seems like a lot of work.","ja":"かなり大変そうに見える。"}]},{"no":49,"level":2,"pattern":"It looks like ~","meaning":"〜みたいだ（見た目・状況から判断）","examples":[{"en":"It looks like we're gonna be late.","ja":"遅刻しそうだね。"},{"en":"It looks like rain.","ja":"雨になりそう。"},{"en":"It looks like they changed the menu.","ja":"メニューが変わったみたい。"}]},{"no":50,"level":2,"pattern":"It sounds like ~","meaning":"〜のようだ（聞いた話から判断）","examples":[{"en":"It sounds like you had a rough day.","ja":"大変な一日だったみたいだね。"},{"en":"It sounds like a good idea.","ja":"良さそうなアイデアだね。"},{"en":"It sounds like they're looking for someone with experience.","ja":"経験者を探してるみたいだね。"}]},{"no":51,"level":3,"pattern":"It's worth ~ing","meaning":"〜する価値がある","examples":[{"en":"It's worth trying.","ja":"試してみる価値あるよ。"},{"en":"It's worth reading that book.","ja":"その本は読む価値あるよ。"},{"en":"It's worth taking the time to learn.","ja":"時間をかけて学ぶ価値がある。"}]},{"no":52,"level":3,"pattern":"It's no wonder ~","meaning":"〜なのも当然だ","examples":[{"en":"It's no wonder you're tired.","ja":"疲れるのも当然だよ。"},{"en":"It's no wonder she's upset.","ja":"彼女が怒るのも無理はない。"},{"en":"It's no wonder the place is so popular.","ja":"あの店が人気なのも頷ける。"}]},{"no":53,"level":3,"pattern":"There's no way ~","meaning":"絶対に〜ない・〜は無理","examples":[{"en":"There's no way I can finish this by tomorrow.","ja":"明日までに終わらせるなんて絶対無理。"},{"en":"There's no way he said that.","ja":"彼がそんなこと言うはずがない。"},{"en":"There's no way this is gonna work.","ja":"これがうまくいくはずがない。"}]},{"no":54,"level":3,"pattern":"There's a chance ~","meaning":"〜という可能性がある","examples":[{"en":"There's a chance he'll change his mind.","ja":"彼が気が変わる可能性もある。"},{"en":"There's a chance we might get tickets.","ja":"チケットが取れるかもしれない。"},{"en":"There's a chance it could work out.","ja":"うまくいく可能性もある。"}]},{"no":55,"level":3,"pattern":"There's no point in ~ing","meaning":"〜しても意味がない","examples":[{"en":"There's no point in worrying about it.","ja":"それについて心配しても意味がない。"},{"en":"There's no point in arguing.","ja":"言い争っても意味がない。"},{"en":"There's no point in waiting any longer.","ja":"これ以上待っても意味がない。"}]},{"no":56,"level":3,"pattern":"The thing is ~","meaning":"実はね〜・問題はね〜","examples":[{"en":"The thing is, I don't have enough time.","ja":"実はね、時間が足りないんだよね。"},{"en":"The thing is, I'm not sure if it'll work.","ja":"問題はね、うまくいくかわからないんだよ。"},{"en":"The thing is, I already made plans.","ja":"実はもう予定入れちゃったんだよね。"}]},{"no":57,"level":3,"pattern":"The good news is ~","meaning":"いい知らせはね〜","examples":[{"en":"The good news is we still have time.","ja":"いい知らせはね、まだ時間があるってこと。"},{"en":"The good news is it's not that serious.","ja":"良かったのは、そこまで深刻じゃないってこと。"},{"en":"The good news is they accepted our offer.","ja":"いい知らせは、オファーを受け入れてくれたってこと。"}]},{"no":58,"level":3,"pattern":"The bad news is ~","meaning":"悪い知らせはね〜","examples":[{"en":"The bad news is we're out of time.","ja":"悪い知らせはね、もう時間がないってこと。"},{"en":"The bad news is it's going to cost more.","ja":"悪い知らせは、もっとお金がかかるってこと。"},{"en":"The bad news is we missed the deadline.","ja":"悪い知らせは、締め切りを過ぎてしまったってこと。"}]},{"no":59,"level":3,"pattern":"That's why I ~","meaning":"だから私は〜した","examples":[{"en":"That's why I didn't say anything.","ja":"だから何も言わなかったんだよね。"},{"en":"That's why I brought it up.","ja":"だからその話を持ち出したんだよ。"},{"en":"That's why I decided to quit.","ja":"だから辞めることにしたんだよ。"}]},{"no":60,"level":3,"pattern":"That's when I ~","meaning":"その時〜した","examples":[{"en":"That's when I realized something was wrong.","ja":"その時、何かがおかしいと気づいた。"},{"en":"That's when I decided to make a change.","ja":"その時、変わることを決意した。"},{"en":"That's when I knew I had to leave.","ja":"その時、去らないといけないとわかった。"}]},{"no":61,"level":3,"pattern":"That's how I ~","meaning":"そうやって私は〜した","examples":[{"en":"That's how I learned English.","ja":"そうやって英語を習得したんだよ。"},{"en":"That's how I met her.","ja":"そうやって彼女と出会ったんだよね。"},{"en":"That's how I figured it out.","ja":"そうやって解決したんだよ。"}]},{"no":62,"level":3,"pattern":"Things have been ~","meaning":"最近〜な感じ","examples":[{"en":"Things have been pretty busy lately.","ja":"最近かなりバタバタしてる。"},{"en":"Things have been going well.","ja":"最近うまくいってるよ。"},{"en":"Things have been a little stressful.","ja":"最近ちょっとストレスが多くて。"}]},{"no":63,"level":3,"pattern":"I had no idea ~","meaning":"〜だとは全然知らなかった","examples":[{"en":"I had no idea you were here.","ja":"あなたがここにいるとは全然知らなかった。"},{"en":"I had no idea it would take this long.","ja":"こんなに時間がかかるとは思ってなかった。"},{"en":"I had no idea he was going through that.","ja":"彼がそんな状況だったとは全然知らなかった。"}]},{"no":64,"level":3,"pattern":"I never thought I'd ~","meaning":"〜するとは思ってもみなかった","examples":[{"en":"I never thought I'd live abroad.","ja":"海外で暮らすとは思ってもみなかった。"},{"en":"I never thought I'd enjoy this.","ja":"これが楽しいとは思ってもいなかった。"},{"en":"I never thought I'd see you here.","ja":"ここであなたに会うとは思わなかった。"}]},{"no":65,"level":3,"pattern":"I ended up having to ~","meaning":"結局〜しなければならなくなった","examples":[{"en":"I ended up having to cancel my trip.","ja":"結局旅行をキャンセルしなければならなくなった。"},{"en":"I ended up having to work overtime.","ja":"結局残業しなければならなくなった。"},{"en":"I ended up having to apologize.","ja":"結局謝らなければならなくなった。"}]},{"no":66,"level":3,"pattern":"I'm gonna have to pass on ~","meaning":"〜は遠慮しておきます","examples":[{"en":"I'm gonna have to pass on that.","ja":"それは遠慮しておきます。"},{"en":"I'm gonna have to pass on the party tonight.","ja":"今夜のパーティーはパスします。"},{"en":"I'm gonna have to pass on dessert.","ja":"デザートはいいです。"}]},{"no":67,"level":3,"pattern":"I'll have to get back to you on ~","meaning":"〜については後で返事します","examples":[{"en":"I'll have to get back to you on that.","ja":"それについては後で返事しますね。"},{"en":"I'll have to get back to you on the schedule.","ja":"スケジュールについては後で確認して連絡します。"},{"en":"I'll have to get back to you on the pricing.","ja":"価格については後で確認して連絡します。"}]},{"no":68,"level":3,"pattern":"I'm not really into ~","meaning":"〜はあまり好きじゃない","examples":[{"en":"I'm not really into spicy food.","ja":"辛い食べ物はあまり得意じゃない。"},{"en":"I'm not really into horror movies.","ja":"ホラー映画はあまり好きじゃない。"},{"en":"I'm not really into working out in the morning.","ja":"朝の運動はあまり好きじゃない。"}]},{"no":69,"level":3,"pattern":"I'd say ~","meaning":"〜だと思う・〜くらいかな","examples":[{"en":"I'd say it takes about an hour. 1","ja":"時間くらいかかると思う。"},{"en":"I'd say she's in her 30s.","ja":"彼女は30代くらいかな。"},{"en":"I'd say it's worth trying.","ja":"試してみる価値はあると思う。"}]},{"no":70,"level":3,"pattern":"It's hard to say ~","meaning":"〜はなんとも言えない","examples":[{"en":"It's hard to say when it'll be done.","ja":"いつ終わるかはなんとも言えない。"},{"en":"It's hard to say if it'll work.","ja":"うまくいくかどうかはわからない。"},{"en":"It's hard to say what the right answer is.","ja":"正解が何かはなんとも言えない。"}]},{"no":71,"level":3,"pattern":"I hate to say it, but ~","meaning":"言いたくないんだけど〜","examples":[{"en":"I hate to say it, but we're running out of time.","ja":"言いたくないんだけど、時間がなくなってきてる。"},{"en":"I hate to say it, but I don't think it's gonna work.","ja":"言いにくいんだけど、うまくいかないと思う。"},{"en":"I hate to say it, but I have to cancel.","ja":"言いにくいんだけど、キャンセルしなきゃいけない。"}]},{"no":72,"level":3,"pattern":"I'm on the fence about ~","meaning":"〜については迷っている","examples":[{"en":"I'm on the fence about taking the job.","ja":"その仕事を受けるかどうか迷ってる。"},{"en":"I'm on the fence about moving.","ja":"引っ越しについては迷ってる。"},{"en":"I'm on the fence about getting a pet.","ja":"ペットを飼うかどうか迷ってる。"}]},{"no":73,"level":3,"pattern":"I could go either way on ~","meaning":"〜はどちらでもいい","examples":[{"en":"I could go either way on where we eat.","ja":"どこで食べるかはどちらでもいい。"},{"en":"I could go either way on the color.","ja":"色はどちらでもいい。"},{"en":"I could go either way on staying or leaving.","ja":"残るか去るかはどちらでもいい。"}]},{"no":74,"level":3,"pattern":"I wouldn't say ~","meaning":"〜とは言えないかな","examples":[{"en":"I wouldn't say it's easy.","ja":"簡単とは言えないかな。"},{"en":"I wouldn't say he's a close friend.","ja":"彼が親友かというとそうでもないかな。"},{"en":"I wouldn't say I'm an expert.","ja":"専門家とは言えないかな。"}]},{"no":75,"level":3,"pattern":"Not necessarily ~","meaning":"必ずしも〜ではない","examples":[{"en":"Not necessarily true.","ja":"必ずしも正しいとは言えない。"},{"en":"Not necessarily the best option.","ja":"必ずしも最善策とは限らない。"},{"en":"Not necessarily what I expected.","ja":"必ずしも期待通りではなかった。"}]},{"no":76,"level":3,"pattern":"Now that you mention it ~","meaning":"そう言えば〜","examples":[{"en":"Now that you mention it, I did hear something about that.","ja":"そう言えば、それについて何か聞いたような気がする。"},{"en":"Now that you mention it, I haven't eaten all day.","ja":"そう言えば、今日何も食べてない。"},{"en":"Now that you mention it, she did seem off today.","ja":"そう言えば、彼女今日なんか変だったな。"}]},{"no":77,"level":3,"pattern":"Come to think of it ~","meaning":"よく考えてみれば〜","examples":[{"en":"Come to think of it, I've never tried that.","ja":"よく考えてみれば、試したことないな。"},{"en":"Come to think of it, that makes sense.","ja":"よく考えてみれば、それは納得できる。"},{"en":"Come to think of it, I should call her.","ja":"よく考えてみれば、彼女に電話した方がいい。"}]},{"no":78,"level":3,"pattern":"Not to mention ~","meaning":"〜はもちろんのこと","examples":[{"en":"It's expensive, not to mention time-consuming.","ja":"お金がかかるし、時間もかかる。"},{"en":"It's hard work, not to mention stressful.","ja":"大変だし、しかもストレスも多い。"},{"en":"She's talented, not to mention hardworking.","ja":"彼女は才能があるし、しかも努力家でもある。"}]},{"no":79,"level":3,"pattern":"On top of that ~","meaning":"その上に〜・さらに〜","examples":[{"en":"It's cold, and on top of that, it's raining.","ja":"寒いし、その上雨まで降ってる。"},{"en":"I lost my wallet, and on top of that, I missed my train.","ja":"財布をなくして、その上電車も乗り遅れた。"},{"en":"On top of that, we're short-staffed.","ja":"さらに、人手も足りていない。"}]},{"no":80,"level":3,"pattern":"Now that ~","meaning":"〜になったから・〜したので","examples":[{"en":"Now that I think about it, I should've said something.","ja":"よく考えたら、何か言うべきだった。"},{"en":"Now that the project is done, I can relax.","ja":"プロジェクトが終わったから、ゆっくりできる。"},{"en":"Now that you're here, we can get started.","ja":"あなたが来たから、始められる。"}]},{"no":81,"level":3,"pattern":"At the end of the day ~","meaning":"結局のところ〜","examples":[{"en":"At the end of the day, it's your decision.","ja":"結局のところ、あなたが決めることだよ。"},{"en":"At the end of the day, what matters is that you tried.","ja":"結局大事なのは、頑張ったってことだよ。"},{"en":"At the end of the day, we all want the same thing.","ja":"結局みんな同じものを求めてるんだよ。"}]},{"no":82,"level":3,"pattern":"Either way ~","meaning":"どちらにしても〜","examples":[{"en":"Either way, we need to make a decision.","ja":"どちらにしても、決断しないといけない。"},{"en":"Either way, I'm happy with the result.","ja":"どちらにしても、結果には満足してる。"},{"en":"Either way, let me know what you decide.","ja":"どちらにしても、決めたら教えて。"}]},{"no":83,"level":3,"pattern":"As far as I know ~","meaning":"私が知る限りでは〜","examples":[{"en":"As far as I know, the meeting is still on.","ja":"私が知る限り、会議は予定通りです。"},{"en":"As far as I know, he hasn't replied yet.","ja":"私が知る限り、彼からまだ返事はないよ。"},{"en":"As far as I know, that's the latest update.","ja":"私が知る限り、それが最新の情報です。"}]},{"no":84,"level":3,"pattern":"As long as ~","meaning":"〜である限り・〜さえすれば","examples":[{"en":"As long as you're happy, that's all that matters.","ja":"あなたが幸せならそれでいい。"},{"en":"As long as it doesn't rain, we're good.","ja":"雨さえ降らなければ大丈夫。"},{"en":"As long as you let me know in advance, it's fine.","ja":"事前に教えてくれれば問題ないよ。"}]},{"no":85,"level":3,"pattern":"In the meantime ~","meaning":"その間〜・とりあえず〜","examples":[{"en":"In the meantime, let's grab some coffee.","ja":"その間、コーヒーでも飲もう。"},{"en":"In the meantime, I'll keep you posted.","ja":"その間、随時連絡するね。"},{"en":"In the meantime, feel free to look around.","ja":"その間、自由に見回してください。"}]},{"no":86,"level":3,"pattern":"What's the point of ~ing?","meaning":"〜する意味ある？","examples":[{"en":"What's the point of complaining?","ja":"文句言っても意味ないよ。"},{"en":"What's the point of waiting any longer?","ja":"これ以上待っても意味ある？"},{"en":"What's the point of rushing if we're already late?","ja":"もう遅れてるなら急いでも意味なくない？"}]},{"no":87,"level":3,"pattern":"What am I supposed to ~?","meaning":"私はどうすれば〜？","examples":[{"en":"What am I supposed to do now?","ja":"私今どうすればいいの？"},{"en":"What am I supposed to say?","ja":"何て言えばいいの？"},{"en":"What am I supposed to wear to this event?","ja":"このイベント、何着ていけばいいの？"}]},{"no":88,"level":3,"pattern":"How am I supposed to ~?","meaning":"どうやって〜すればいいの？","examples":[{"en":"How am I supposed to know that?","ja":"そんなこと、私にどうやってわかるの？"},{"en":"How am I supposed to finish this by tomorrow?","ja":"明日までにこれをどうやって終わらせればいいの？"},{"en":"How am I supposed to get there without a car?","ja":"車なしでどうやってそこに行けばいいの？"}]},{"no":89,"level":3,"pattern":"Whatever works for ~","meaning":"〜に合うならなんでもいい","examples":[{"en":"Whatever works for you.","ja":"あなたに合うならなんでもいいよ。"},{"en":"Whatever works for the team.","ja":"チームにとってうまくいくならなんでもいい。"},{"en":"Whatever works for your schedule.","ja":"あなたのスケジュールに合うならなんでもいい。"}]},{"no":90,"level":3,"pattern":"I'm starting to ~","meaning":"〜し始めている","examples":[{"en":"I'm starting to understand.","ja":"だんだんわかってきた。"},{"en":"I'm starting to feel better.","ja":"少しずつよくなってきた。"},{"en":"I'm starting to think this was a mistake.","ja":"これは間違いだったと思い始めてる。"}]},{"no":91,"level":4,"pattern":"I can't believe ~","meaning":"〜とは信じられない","examples":[{"en":"I can't believe it's already Friday.","ja":"もう金曜日だなんて信じられない。"},{"en":"I can't believe you did that.","ja":"あなたがそんなことをするなんて信じられない。"},{"en":"I can't believe how fast time flies.","ja":"時間が経つのが信じられないくらい速い。"}]},{"no":92,"level":4,"pattern":"I honestly can't ~","meaning":"正直〜できない","examples":[{"en":"I honestly can't tell the difference.","ja":"正直、違いがわからない。"},{"en":"I honestly can't remember.","ja":"正直、覚えてない。"},{"en":"I honestly can't imagine living without it.","ja":"正直、それなしの生活は想像できない。"}]},{"no":93,"level":4,"pattern":"I seriously ~","meaning":"マジで〜する","examples":[{"en":"I seriously had no idea.","ja":"マジで全然知らなかった。"},{"en":"I seriously can't deal with this.","ja":"マジでこれ無理。"},{"en":"I seriously need a vacation.","ja":"マジで休暇が必要。"}]},{"no":94,"level":4,"pattern":"I'm kind of ~ing","meaning":"ちょっと〜してる感じ","examples":[{"en":"I'm kind of hoping they cancel it.","ja":"ちょっとキャンセルになってほしいと思ってたりして。"},{"en":"I'm kind of dreading this meeting.","ja":"この会議ちょっと憂鬱だったりする。"},{"en":"I'm kind of enjoying this, to be honest.","ja":"正直、これちょっと楽しんでたりする。"}]},{"no":95,"level":4,"pattern":"I sort of ~","meaning":"なんとなく〜する・どちらかというと〜","examples":[{"en":"I sort of forgot about it.","ja":"なんとなく忘れてた。"},{"en":"I sort of expected this to happen.","ja":"なんとなくこうなると思ってた。"},{"en":"I sort of like the idea, actually.","ja":"実はそのアイデア、悪くないと思ってる。"}]},{"no":96,"level":4,"pattern":"I'm in the middle of ~ing","meaning":"〜の途中だ","examples":[{"en":"I'm in the middle of eating.","ja":"今ご飯食べてる途中なんだよね。"},{"en":"I'm in the middle of writing a report.","ja":"レポートを書いてる途中なんだよ。"},{"en":"I'm in the middle of a meeting.","ja":"今会議中なんです。"}]},{"no":97,"level":4,"pattern":"I've been meaning to ~","meaning":"ずっと〜しようと思ってた","examples":[{"en":"I've been meaning to call you.","ja":"ずっと電話しようと思ってたんだよね。"},{"en":"I've been meaning to try that restaurant.","ja":"ずっとあのレストラン行こうと思ってた。"},{"en":"I've been meaning to apologize.","ja":"ずっと謝ろうと思ってたんだ。"}]},{"no":98,"level":4,"pattern":"I'm better off ~ing","meaning":"〜した方がいい・〜の方がうまくいく","examples":[{"en":"I'm better off going alone.","ja":"一人で行った方がいい。"},{"en":"I'm better off starting over.","ja":"最初からやり直した方がいい。"},{"en":"I'm better off without it.","ja":"それがなかった方がうまくいく。"}]},{"no":99,"level":4,"pattern":"It's not like ~","meaning":"〜というわけじゃないし","examples":[{"en":"It's not like I don't care.","ja":"気にしてないわけじゃないよ。"},{"en":"It's not like we have a choice.","ja":"選択肢があるわけじゃないし。"},{"en":"It's not like I planned this.","ja":"計画してたわけじゃないし。"}]},{"no":100,"level":4,"pattern":"I can't afford to ~","meaning":"〜する余裕がない","examples":[{"en":"I can't afford to waste time.","ja":"時間を無駄にする余裕はない。"},{"en":"I can't afford to make mistakes right now.","ja":"今は失敗する余裕がない。"},{"en":"I can't afford to take a day off.","ja":"一日休む余裕がない。"}]}];
+const THEMED = {"1":[{"theme":"仕事","en":"I'm gonna finish this report before I go home.","ja":"帰る前にこの報告書、終わらせるつもり。"},{"theme":"家族・友人","en":"I'm gonna call my mom later tonight.","ja":"今夜あとで母さんに電話するつもり。"},{"theme":"食事","en":"I'm gonna order the ramen again, I think.","ja":"また同じラーメン頼もうかなって思ってる。"},{"theme":"休日","en":"I'm gonna sleep in on Sunday morning.","ja":"日曜の朝はゆっくり寝るつもり。"},{"theme":"気持ち","en":"I'm gonna be honest, I'm really nervous about it.","ja":"正直に言うけど、それすごく緊張してるんだ。"},{"theme":"日常","en":"I'm gonna stop by the store on my way back.","ja":"帰りにちょっとお店に寄るつもり。"}],"2":[{"theme":"仕事","en":"I have to finish this report before the meeting.","ja":"会議の前にこの報告書を仕上げなきゃいけないんだ。"},{"theme":"家族・友人","en":"I have to call my mom back tonight.","ja":"今夜、母に折り返し電話しなきゃ。"},{"theme":"食事","en":"I have to eat something before I get a headache.","ja":"頭が痛くなる前に何か食べないと。"},{"theme":"休日","en":"I have to do laundry sometime this weekend.","ja":"今週末のどこかで洗濯しないといけないな。"},{"theme":"気持ち","en":"I have to calm down before I say something stupid.","ja":"変なこと言う前に落ち着かなきゃ。"},{"theme":"日常","en":"I have to stop by the bank on my way home.","ja":"帰りに銀行に寄らなきゃいけないんだ。"}],"3":[{"theme":"仕事","en":"I want to finish this report before lunch today.","ja":"今日は昼までにこの報告書を終わらせたいな。"},{"theme":"家族・友人","en":"I want to call my mom before it gets late.","ja":"遅くなる前に母さんに電話したいんだよね。"},{"theme":"食事","en":"I want to try that new ramen place near the station.","ja":"駅の近くにできたラーメン屋に行ってみたい。"},{"theme":"休日","en":"I want to sleep in and do nothing this Sunday.","ja":"今度の日曜は寝坊して何もしないでいたい。"},{"theme":"気持ち","en":"I want to talk about something that's been bothering me.","ja":"ちょっと気になってることを話したいんだけど。"},{"theme":"日常","en":"I want to stop by the drugstore on the way home.","ja":"帰りにドラッグストアに寄りたいんだよね。"}],"4":[{"theme":"仕事","en":"I need to finish this report before the meeting.","ja":"会議の前にこの報告書を終わらせないといけないんだ。"},{"theme":"家族・友人","en":"I need to call my mom back tonight.","ja":"今夜、母に折り返し電話しないといけない。"},{"theme":"食事","en":"I need to buy something for dinner on the way home.","ja":"帰りに晩ご飯の何か買わないといけないな。"},{"theme":"休日","en":"I need to do the laundry before we go out.","ja":"出かける前に洗濯しておかないといけないの。"},{"theme":"気持ち","en":"I need to relax a little, I'm too stressed lately.","ja":"最近ストレスがたまってるから、少し休まないとだめだね。"},{"theme":"日常","en":"I need to charge my phone, it's almost dead.","ja":"スマホ充電しないと。もう電池切れそう。"}],"5":[{"theme":"仕事","en":"I'm trying to finish this report before lunch.","ja":"お昼までにこの報告書を終わらせようとしてるんだ。"},{"theme":"家族・友人","en":"I'm trying to call my mom more often these days.","ja":"最近は母にもっと電話するようにしてるんだ。"},{"theme":"食事","en":"I'm trying to eat less sugar, but it's hard.","ja":"甘いもの控えようとしてるんだけど、難しいね。"},{"theme":"休日","en":"I'm trying to get out of the house on weekends.","ja":"週末はちょっと外に出るようにしてるんだ。"},{"theme":"気持ち","en":"I'm trying not to worry so much about it.","ja":"あんまり気にしないようにしてるんだ。"},{"theme":"日常","en":"I'm trying to wake up earlier every morning.","ja":"毎朝もっと早く起きようと頑張ってるよ。"}],"6":[{"theme":"仕事","en":"I used to work at a bank before this job.","ja":"この仕事の前は銀行で働いてたんだ。"},{"theme":"家族・友人","en":"I used to call my mom every Sunday night.","ja":"昔は毎週日曜の夜に母に電話してたんだ。"},{"theme":"食事","en":"I used to skip breakfast, but now I always eat.","ja":"前は朝ごはん抜いてたけど、今はちゃんと食べてる。"},{"theme":"休日","en":"I used to play soccer with friends on weekends.","ja":"以前は週末に友達とサッカーしてたよ。"},{"theme":"気持ち","en":"I used to get really nervous before meetings.","ja":"昔は会議の前にすごく緊張してたんだ。"},{"theme":"日常","en":"I used to take the bus, but now I walk.","ja":"前はバスに乗ってたけど、今は歩いてる。"}],"7":[{"theme":"仕事","en":"I've got to finish this report before the meeting.","ja":"会議の前にこの報告書を終わらせなきゃ。"},{"theme":"家族・友人","en":"I've got to call my mom back tonight.","ja":"今夜お母さんに電話かけ直さなきゃ。"},{"theme":"食事","en":"I've got to eat something before I get too hungry.","ja":"お腹すきすぎる前に何か食べなきゃ。"},{"theme":"休日","en":"I've got to do the laundry sometime this weekend.","ja":"週末のどこかで洗濯しなきゃ。"},{"theme":"気持ち","en":"I've got to calm down before I say something stupid.","ja":"変なこと言う前に落ち着かなきゃ。"},{"theme":"日常","en":"Sorry, I've got to go — my train's leaving.","ja":"ごめん、もう行かなきゃ。電車が出ちゃう。"}],"8":[{"theme":"仕事","en":"I'm about to head into a meeting, can I call you back?","ja":"今から会議に入るところなんで、あとでかけ直してもいい？"},{"theme":"家族・友人","en":"I'm about to leave the house, so I'll be there soon.","ja":"今ちょうど家出るところだから、もうすぐ着くよ。"},{"theme":"食事","en":"I'm about to start eating, so let's talk later.","ja":"今から食べ始めるところだから、話はあとにしよう。"},{"theme":"休日","en":"I'm about to go for a walk in the park.","ja":"これから公園を散歩しに行くところなんだ。"},{"theme":"気持ち","en":"I'm about to cry, this movie is really too much.","ja":"泣きそう、この映画ほんとにやばいわ。"},{"theme":"日常","en":"I'm about to take a shower, so give me ten minutes.","ja":"今からシャワー浴びるから、十分だけ待って。"}],"9":[{"theme":"仕事","en":"I ended up staying at the office until ten last night.","ja":"昨日は結局、夜十時まで会社に残ることになったよ。"},{"theme":"家族・友人","en":"I ended up driving my sister to the airport.","ja":"結局、妹を空港まで車で送ることになったんだ。"},{"theme":"食事","en":"I ended up eating convenience store food again tonight.","ja":"今夜も結局、コンビニのごはんを食べちゃった。"},{"theme":"休日","en":"I ended up sleeping all day on my day off.","ja":"休みの日、結局一日中寝て過ごしちゃった。"},{"theme":"気持ち","en":"I ended up crying during that movie, believe it or not.","ja":"信じられないけど、あの映画で結局泣いちゃった。"},{"theme":"日常","en":"I ended up walking home because I missed the last train.","ja":"終電を逃して、結局歩いて帰ることになったよ。"}],"10":[{"theme":"仕事","en":"I feel like leaving the office a bit early today.","ja":"今日はちょっと早めに退社したい気分だな。"},{"theme":"家族・友人","en":"I feel like calling my mom tonight, it's been a while.","ja":"久しぶりに今夜お母さんに電話したい気分。"},{"theme":"食事","en":"I feel like eating something spicy for dinner tonight.","ja":"今夜は何か辛いもの食べたい気分だな。"},{"theme":"休日","en":"I feel like staying in bed all day tomorrow.","ja":"明日は一日中ベッドでゴロゴロしたい気分。"},{"theme":"気持ち","en":"I feel like crying, but I don't know why.","ja":"なんでか分かんないけど泣きたい気分なんだ。"},{"theme":"日常","en":"I feel like taking a walk before it gets dark.","ja":"暗くなる前に散歩したい気分だな。"}],"11":[{"theme":"仕事","en":"I'm thinking about asking my boss for a day off.","ja":"上司に一日休みをもらおうかなと思ってるんだ。"},{"theme":"家族・友人","en":"I'm thinking about calling my parents this weekend.","ja":"今週末、実家に電話しようかなと思ってる。"},{"theme":"食事","en":"I'm thinking about making curry for dinner tonight.","ja":"今夜はカレーを作ろうかなと思ってるんだけど。"},{"theme":"休日","en":"I'm thinking about going to the beach on Sunday.","ja":"日曜日は海に行こうかなと思ってる。"},{"theme":"気持ち","en":"I'm thinking about quitting, but I'm still not sure.","ja":"辞めようかなと思ってるけど、まだ迷ってるんだ。"},{"theme":"日常","en":"I'm thinking about getting a haircut after work today.","ja":"今日仕事の後、髪を切ろうかなと思ってる。"}],"12":[{"theme":"仕事","en":"I was about to send you that email, actually.","ja":"ちょうど今、そのメール送ろうとしてたところなんだよ。"},{"theme":"家族・友人","en":"I was about to call you when you texted me.","ja":"ちょうど電話しようとしたら、君からメール来たんだよ。"},{"theme":"食事","en":"I was about to order, but the waiter disappeared.","ja":"ちょうど注文しようとしたのに、店員さんいなくなっちゃった。"},{"theme":"休日","en":"I was about to head out when it started raining.","ja":"ちょうど出かけようとしたら、雨が降り出したんだ。"},{"theme":"気持ち","en":"I was about to give up, but I kept going.","ja":"もうあきらめかけたけど、なんとか続けたんだ。"},{"theme":"日常","en":"I was about to go to bed, so let's talk tomorrow.","ja":"ちょうど寝るところだから、話は明日にしよう。"}],"13":[{"theme":"仕事","en":"I'm gonna have to stay late again tonight, sorry.","ja":"今夜もまた残業しなきゃならなそう、ごめんね。"},{"theme":"家族・友人","en":"I'm gonna have to cancel on you this weekend.","ja":"今週末は約束キャンセルしなきゃならなくなりそう。"},{"theme":"食事","en":"I'm gonna have to skip lunch and just grab coffee.","ja":"お昼は抜いてコーヒーだけで済ませることになりそう。"},{"theme":"休日","en":"I'm gonna have to clean the whole apartment on Sunday.","ja":"日曜は部屋中を掃除しなきゃならなくなりそう。"},{"theme":"気持ち","en":"I'm gonna have to tell him how I really feel.","ja":"彼に本当の気持ちを伝えなきゃならなくなりそう。"},{"theme":"日常","en":"I'm gonna have to buy a new umbrella again.","ja":"また新しい傘を買わなきゃならなくなりそう。"}],"14":[{"theme":"仕事","en":"I'm supposed to finish this report by Friday.","ja":"金曜までにこの報告書を仕上げることになってるんだ。"},{"theme":"家族・友人","en":"I'm supposed to pick up my sister at the station.","ja":"駅に妹を迎えに行くことになってるの。"},{"theme":"食事","en":"I'm supposed to cook dinner tonight, but I'm tired.","ja":"今夜は私が夕飯作ることになってるけど、疲れちゃった。"},{"theme":"休日","en":"I'm supposed to go hiking with them on Sunday.","ja":"日曜は彼らとハイキングに行くことになってるんだ。"},{"theme":"気持ち","en":"I'm supposed to be happy, but I feel nervous.","ja":"喜ぶところなんだろうけど、なんか緊張しちゃって。"},{"theme":"日常","en":"I'm supposed to take this medicine after every meal.","ja":"この薬、毎食後に飲むことになってるんだよ。"}],"15":[{"theme":"仕事","en":"I have no idea what my boss wants from me.","ja":"上司が私に何を求めてるのか全然わからない。"},{"theme":"家族・友人","en":"I have no idea what to get my dad for his birthday.","ja":"父の誕生日に何をあげたらいいか全然わからない。"},{"theme":"食事","en":"I have no idea what's in this sauce, but it's good.","ja":"このソース、何が入ってるのか全然わからないけど美味しい。"},{"theme":"休日","en":"I have no idea how to get to that beach.","ja":"あのビーチへの行き方が全然わからないんだ。"},{"theme":"気持ち","en":"I have no idea why I'm so nervous today.","ja":"今日なんでこんなに緊張してるのか全然わからない。"},{"theme":"日常","en":"I have no idea where I put my keys.","ja":"鍵をどこに置いたのか全然わからない。"}],"16":[{"theme":"仕事","en":"I can't wait to finish this project on Friday.","ja":"金曜にこのプロジェクトが終わるのが待ちきれないよ。"},{"theme":"家族・友人","en":"I can't wait to see my sister next weekend.","ja":"来週末に妹に会えるのが待ちきれない。"},{"theme":"食事","en":"I can't wait to try that new ramen place.","ja":"あの新しいラーメン屋、早く行ってみたくてたまらない。"},{"theme":"休日","en":"I can't wait to sleep in on Sunday morning.","ja":"日曜の朝にゆっくり寝坊するのが待ちきれないよ。"},{"theme":"気持ち","en":"I can't wait to tell you what happened today.","ja":"今日あったこと、早く話したくてしょうがないんだ。"},{"theme":"日常","en":"I can't wait to take a hot bath tonight.","ja":"今夜、熱いお風呂に入るのが待ちきれない。"}],"17":[{"theme":"仕事","en":"I'm looking forward to finishing this project next week.","ja":"来週このプロジェクトが終わるのを楽しみにしてるんだ。"},{"theme":"家族・友人","en":"I'm looking forward to seeing my sister this weekend.","ja":"今週末に妹に会えるのを楽しみにしてるの。"},{"theme":"食事","en":"I'm looking forward to trying that new ramen place.","ja":"あの新しいラーメン屋に行くのが楽しみなんだ。"},{"theme":"休日","en":"I'm looking forward to sleeping in on Sunday morning.","ja":"日曜の朝にゆっくり寝るのが楽しみだよ。"},{"theme":"気持ち","en":"Honestly, I'm looking forward to starting something new.","ja":"正直、何か新しいことを始めるのが楽しみなんだ。"},{"theme":"日常","en":"I'm looking forward to taking a hot bath tonight.","ja":"今夜、熱いお風呂に入るのが楽しみだな。"}],"18":[{"theme":"仕事","en":"I'm dying to finish this project and go home.","ja":"このプロジェクト早く終わらせて帰りたくてたまらないよ。"},{"theme":"家族・友人","en":"I'm dying to see my little sister's new baby.","ja":"妹の赤ちゃんに会いたくてたまらないんだ。"},{"theme":"食事","en":"I'm dying to try that new ramen place downtown.","ja":"駅前の新しいラーメン屋、食べに行きたくてたまらない。"},{"theme":"休日","en":"I'm dying to sleep in this Sunday morning.","ja":"今度の日曜は朝寝坊したくてたまらないよ。"},{"theme":"気持ち","en":"I'm dying to tell you what happened at work.","ja":"職場であったこと、話したくてたまらないんだけど。"},{"theme":"日常","en":"I'm dying to take a hot shower right now.","ja":"今すぐ熱いシャワー浴びたくてたまらない。"}],"19":[{"theme":"仕事","en":"I'm hoping to finish this report before lunch.","ja":"お昼までにこの報告書を終わらせられたらと思ってるんだ。"},{"theme":"家族・友人","en":"I'm hoping to visit my parents this weekend.","ja":"今週末、実家に帰れたらと思ってるんだ。"},{"theme":"食事","en":"I'm hoping to try that new ramen place tonight.","ja":"今夜あの新しいラーメン屋に行けたらいいなと思ってる。"},{"theme":"休日","en":"I'm hoping to just sleep in on Sunday.","ja":"日曜はゆっくり寝坊できたらと思ってるんだ。"},{"theme":"気持ち","en":"I'm hoping to feel a bit calmer by tomorrow.","ja":"明日までには少し落ち着けたらいいなと思ってる。"},{"theme":"日常","en":"I'm hoping to catch the seven o'clock train.","ja":"七時の電車に乗れたらと思ってるんだ。"}],"20":[{"theme":"仕事","en":"I'm planning on leaving the office a bit early today.","ja":"今日はちょっと早めに会社を出る予定なんだ。"},{"theme":"家族・友人","en":"I'm planning on visiting my parents this weekend.","ja":"今週末、実家に帰る予定なんだ。"},{"theme":"食事","en":"I'm planning on cooking curry for dinner tonight.","ja":"今夜はカレーを作る予定だよ。"},{"theme":"休日","en":"I'm planning on staying home and doing nothing tomorrow.","ja":"明日は家で何もしないでいる予定。"},{"theme":"気持ち","en":"I'm planning on telling him how I really feel.","ja":"彼に本当の気持ちを伝えるつもりなんだ。"},{"theme":"日常","en":"I'm planning on stopping by the supermarket on my way home.","ja":"帰りにスーパーに寄る予定だよ。"}],"21":[{"theme":"仕事","en":"I'm considering changing jobs sometime next year.","ja":"来年あたり転職しようかと考えてるんだ。"},{"theme":"家族・友人","en":"I'm considering inviting my parents over for the holidays.","ja":"休みに両親をうちに呼ぼうかと検討してるの。"},{"theme":"食事","en":"I'm considering cooking at home more to save money.","ja":"節約のためにもっと自炊しようかと思ってるんだ。"},{"theme":"休日","en":"I'm considering going to the beach this weekend.","ja":"今週末、海に行こうかなって考えてる。"},{"theme":"気持ち","en":"I'm considering telling him how I really feel.","ja":"彼に本当の気持ちを伝えようか迷ってるんだ。"},{"theme":"日常","en":"I'm considering getting up earlier every morning.","ja":"毎朝もう少し早く起きようかと検討中なんだ。"}],"22":[{"theme":"仕事","en":"I was going to leave early, but my boss called me.","ja":"早く帰るつもりだったんだけど、上司に呼ばれちゃって。"},{"theme":"家族・友人","en":"I was going to call my mom, but it got late.","ja":"母さんに電話するつもりだったけど、遅くなっちゃった。"},{"theme":"食事","en":"I was going to cook, but I ordered pizza instead.","ja":"作るつもりだったけど、結局ピザ頼んじゃった。"},{"theme":"休日","en":"I was going to go hiking, but it rained all day.","ja":"山に行くつもりだったけど、一日中雨だったよ。"},{"theme":"気持ち","en":"I was going to say sorry, but I got nervous.","ja":"謝るつもりだったけど、緊張しちゃって言えなかった。"},{"theme":"日常","en":"I was going to do laundry, but I fell asleep.","ja":"洗濯するつもりだったけど、寝ちゃった。"}],"23":[{"theme":"仕事","en":"I tend to work late when there's a deadline.","ja":"締め切りが近いと、つい遅くまで働いちゃうんだよね。"},{"theme":"家族・友人","en":"I tend to call my mom every Sunday night.","ja":"日曜の夜はだいたい母に電話しちゃうんだ。"},{"theme":"食事","en":"I tend to eat too much when I'm with friends.","ja":"友達と一緒だと、つい食べすぎちゃうんだよね。"},{"theme":"休日","en":"I tend to sleep in until noon on my days off.","ja":"休みの日はつい昼まで寝ちゃうんだ。"},{"theme":"気持ち","en":"I tend to get nervous before speaking in meetings.","ja":"会議で発言する前は、つい緊張しちゃうんだ。"},{"theme":"日常","en":"I tend to check my phone right after waking up.","ja":"起きてすぐスマホを見ちゃう癖があるんだよね。"}],"24":[{"theme":"仕事","en":"I wish I had asked my boss about the deadline.","ja":"あの時、上司に締め切りを聞いておけばよかった。"},{"theme":"家族・友人","en":"I wish I had called my mom on her birthday.","ja":"母の誕生日に電話しておけばよかったな。"},{"theme":"食事","en":"I wish I had ordered the pasta instead of this.","ja":"これじゃなくてパスタを頼めばよかった。"},{"theme":"休日","en":"I wish I had booked the hotel a week earlier.","ja":"ホテル、一週間早く予約しておけばよかった。"},{"theme":"気持ち","en":"I wish I had told him how I really felt.","ja":"あの時、本当の気持ちを彼に言えばよかった。"},{"theme":"日常","en":"I wish I had brought an umbrella this morning.","ja":"今朝、傘を持ってくればよかったなあ。"}],"25":[{"theme":"仕事","en":"I can't help but check my email before bed.","ja":"寝る前にどうしてもメールを確認せずにはいられないんだ。"},{"theme":"家族・友人","en":"I can't help but worry when my daughter comes home late.","ja":"娘の帰りが遅いと、心配せずにはいられないんだよね。"},{"theme":"食事","en":"I can't help but order dessert when I see the menu.","ja":"メニューを見ると、デザートを頼まずにはいられないの。"},{"theme":"休日","en":"On my days off, I can't help but sleep till noon.","ja":"休みの日は、昼まで寝ずにはいられないんだよね。"},{"theme":"気持ち","en":"I can't help but feel a little jealous of him.","ja":"彼のこと、ちょっとうらやましく思わずにはいられないよ。"},{"theme":"日常","en":"I can't help but look at my phone on the train.","ja":"電車の中ではスマホを見ずにはいられないんだよなあ。"}],"26":[{"theme":"仕事","en":"I'd rather finish this report today than work weekends.","ja":"週末に働くくらいなら、この報告書は今日中に終わらせたいな。"},{"theme":"家族・友人","en":"I'd rather call my mom than send a long text.","ja":"長いメールを送るより、母には電話したいかな。"},{"theme":"食事","en":"I'd rather cook at home tonight, if that's okay.","ja":"もしよければ、今夜は家でご飯作りたいんだけど。"},{"theme":"休日","en":"I'd rather stay in bed all morning this Sunday.","ja":"今度の日曜は、午前中ずっとベッドでゴロゴロしていたいな。"},{"theme":"気持ち","en":"I'd rather not talk about it right now, sorry.","ja":"ごめん、今はそのことあまり話したくないんだ。"},{"theme":"日常","en":"I'd rather walk to the station than wait for the bus.","ja":"バスを待つより、駅まで歩いちゃいたいな。"}],"27":[{"theme":"仕事","en":"I'm already at the office, so I might as well finish this report.","ja":"もう会社にいるし、せっかくだからこの報告書、終わらせちゃおう。"},{"theme":"家族・友人","en":"I'm near your place, so I might as well drop by.","ja":"近くまで来てるから、せっかくだしちょっと寄っていこうかな。"},{"theme":"食事","en":"We're already here, so I might as well try the dessert.","ja":"せっかく来たんだし、デザートも頼んじゃおうかな。"},{"theme":"休日","en":"The weather's nice, so I might as well wash the car.","ja":"天気もいいし、せっかくだから洗車でもしちゃおう。"},{"theme":"気持ち","en":"I'm nervous anyway, so I might as well just enjoy it.","ja":"どうせ緊張するんだから、いっそ楽しんじゃおうと思って。"},{"theme":"日常","en":"I'm going out anyway, so I might as well mail this.","ja":"どうせ出かけるし、ついでにこれ出してきちゃおう。"}],"28":[{"theme":"仕事","en":"I'm not in the mood to answer emails today.","ja":"今日はメールに返信する気分じゃないな。"},{"theme":"家族・友人","en":"Sorry, I'm not in the mood to talk right now.","ja":"ごめん、今は話す気分じゃないんだ。"},{"theme":"食事","en":"I'm not in the mood to cook, let's order pizza.","ja":"料理する気分じゃないから、ピザ頼もうよ。"},{"theme":"休日","en":"I'm not in the mood to go out this weekend.","ja":"今週末は出かける気分じゃないな。"},{"theme":"気持ち","en":"I'm not in the mood to laugh about it yet.","ja":"まだそれを笑える気分じゃないよ。"},{"theme":"日常","en":"I'm not in the mood to clean the whole apartment.","ja":"部屋中を掃除する気分じゃないんだよね。"}],"29":[{"theme":"仕事","en":"I'm so done with these pointless meetings every morning.","ja":"毎朝の意味のない会議、もううんざりだよ。"},{"theme":"家族・友人","en":"I'm so done with my brother borrowing money from me.","ja":"弟にお金を貸すのは、もう本当にうんざり。"},{"theme":"食事","en":"I'm so done with convenience store lunches every single day.","ja":"毎日コンビニ弁当なの、もう飽きたよ。"},{"theme":"休日","en":"I'm so done with spending my days off cleaning.","ja":"休みの日が掃除でつぶれるの、もううんざり。"},{"theme":"気持ち","en":"I'm so done with worrying about what everyone thinks.","ja":"人の目を気にするの、もうやめたい。"},{"theme":"日常","en":"I'm so done with this crowded train every morning.","ja":"毎朝のこの満員電車、もう本当に限界。"}],"30":[{"theme":"仕事","en":"I keep making the same mistake on this report.","ja":"この報告書で同じミスばっかりしちゃうんだよね。"},{"theme":"家族・友人","en":"I keep forgetting to call my mom back.","ja":"母に折り返し電話するの、ずっと忘れちゃってる。"},{"theme":"食事","en":"I keep eating snacks even when I'm not hungry.","ja":"お腹すいてないのに、ついついお菓子food食べちゃう。"},{"theme":"休日","en":"I keep sleeping until noon on my days off.","ja":"休みの日はいつもお昼まで寝ちゃうんだ。"},{"theme":"気持ち","en":"I keep thinking about what he said yesterday.","ja":"昨日彼に言われたこと、ずっと考えちゃってる。"},{"theme":"日常","en":"I keep losing my keys somewhere in the house.","ja":"家の中で鍵をなくしてばっかりなんだよね。"}],"31":[{"theme":"仕事","en":"Do you want me to send the file again?","ja":"ファイル、もう一回送ろうか？"},{"theme":"家族・友人","en":"Do you want me to pick up the kids today?","ja":"今日、子供たち迎えに行こうか？"},{"theme":"食事","en":"Do you want me to order pizza for tonight?","ja":"今夜、ピザ頼もうか？"},{"theme":"休日","en":"Do you want me to drive on Sunday instead?","ja":"日曜、代わりに運転しようか？"},{"theme":"気持ち","en":"Do you want me to just listen for a while?","ja":"しばらく黙って聞いてようか？"},{"theme":"日常","en":"Do you want me to wash the dishes tonight?","ja":"今夜、お皿洗っておこうか？"}],"32":[{"theme":"仕事","en":"Would you mind sending me that file again?","ja":"あのファイル、もう一度送ってもらえますか？"},{"theme":"家族・友人","en":"Would you mind picking up my kids today?","ja":"今日、うちの子を迎えに行ってもらえる？"},{"theme":"食事","en":"Would you mind passing me the salt, please?","ja":"塩を取ってもらえますか？"},{"theme":"休日","en":"Would you mind driving to the beach this Sunday?","ja":"今度の日曜、海まで運転してもらえる？"},{"theme":"気持ち","en":"Would you mind listening to me for a minute?","ja":"ちょっと話を聞いてもらえますか？"},{"theme":"日常","en":"Would you mind turning down the TV a little?","ja":"テレビの音、少し下げてもらえますか？"}],"33":[{"theme":"仕事","en":"Is it okay if I leave a little early today?","ja":"今日、少し早く帰ってもいいですか？"},{"theme":"家族・友人","en":"Is it okay if I bring a friend to dinner?","ja":"夕食に友達を連れて行ってもいい？"},{"theme":"食事","en":"Is it okay if I order something without meat?","ja":"お肉が入ってないものを頼んでもいいですか？"},{"theme":"休日","en":"Is it okay if I sleep in on Sunday morning?","ja":"日曜の朝は寝坊してもいい？"},{"theme":"気持ち","en":"Is it okay if I tell you how I feel?","ja":"今の気持ち、正直に言ってもいいかな？"},{"theme":"日常","en":"Is it okay if I open the window a bit?","ja":"窓を少し開けてもいいですか？"}],"34":[{"theme":"仕事","en":"Do you feel like finishing this report tomorrow instead?","ja":"この報告書、明日やる感じにする？"},{"theme":"家族・友人","en":"Do you feel like calling your mom before dinner?","ja":"晩ごはんの前にお母さんに電話したい気分？"},{"theme":"食事","en":"Do you feel like eating ramen or something lighter?","ja":"ラーメンの気分？それとも軽めがいい？"},{"theme":"休日","en":"Do you feel like going to the beach this Sunday?","ja":"今度の日曜、海に行きたい気分？"},{"theme":"気持ち","en":"Do you feel like talking about it, or not really?","ja":"その話、したい気分？それともやめとく？"},{"theme":"日常","en":"Do you feel like walking home, or should we take the bus?","ja":"歩いて帰りたい気分？それともバスにする？"}],"35":[{"theme":"仕事","en":"Are you okay with moving the meeting to three?","ja":"会議を三時にずらしても大丈夫？"},{"theme":"家族・友人","en":"Are you okay with me bringing my sister along?","ja":"妹も連れて行っていいかな、大丈夫？"},{"theme":"食事","en":"Are you okay with ramen again for lunch today?","ja":"お昼、今日もラーメンで大丈夫？"},{"theme":"休日","en":"Are you okay with leaving early on Sunday morning?","ja":"日曜、朝早く出発でも大丈夫？"},{"theme":"気持ち","en":"Are you okay with how things ended last night?","ja":"昨日の終わり方、気持ち的に大丈夫？"},{"theme":"日常","en":"Are you okay with the air conditioner at this temperature?","ja":"エアコン、この温度で大丈夫？"}],"36":[{"theme":"仕事","en":"Do you happen to have a charger I could borrow?","ja":"もしかして充電器持ってない？借りたいんだけど。"},{"theme":"家族・友人","en":"Do you happen to know when your brother's coming back?","ja":"もしかしてお兄さんがいつ帰ってくるか知ってる？"},{"theme":"食事","en":"Do you happen to remember the name of that ramen place?","ja":"もしかしてあのラーメン屋の名前覚えてる？"},{"theme":"休日","en":"Do you happen to be free this Saturday afternoon?","ja":"もしかして今週の土曜の午後、空いてたりする？"},{"theme":"気持ち","en":"Do you happen to feel nervous before big meetings too?","ja":"もしかして大事な会議の前って緊張したりする？"},{"theme":"日常","en":"Do you happen to have change for a thousand yen?","ja":"もしかして千円くずせたりします？"}],"37":[{"theme":"仕事","en":"Are you sure this report is due today?","ja":"この報告書、本当に今日締め切りなの？"},{"theme":"家族・友人","en":"Are you sure your brother knows about the party?","ja":"お兄さん、本当にパーティーのこと知ってるの？"},{"theme":"食事","en":"Are you sure you don't want the last slice?","ja":"最後の一切れ、本当にいらないの？"},{"theme":"休日","en":"Are you sure the museum is open on Mondays?","ja":"その美術館、月曜って本当に開いてるの？"},{"theme":"気持ち","en":"Are you sure you're okay? You look really tired.","ja":"本当に大丈夫？すごく疲れて見えるけど。"},{"theme":"日常","en":"Are you sure you locked the front door?","ja":"玄関の鍵、ちゃんとかけた？本当に？"}],"38":[{"theme":"仕事","en":"Let me know if you need help with that report.","ja":"あのレポート、手伝いが必要だったら言ってね。"},{"theme":"家族・友人","en":"Let me know if you get home safely tonight.","ja":"今夜、無事に家に着いたら連絡してね。"},{"theme":"食事","en":"Let me know if there's anything you can't eat.","ja":"食べられないものがあったら教えてね。"},{"theme":"休日","en":"Let me know if you're free this Sunday afternoon.","ja":"今度の日曜の午後、空いてたら教えて。"},{"theme":"気持ち","en":"Let me know if I said something that upset you.","ja":"私が何か嫌なこと言ってたら教えてね。"},{"theme":"日常","en":"Let me know if the delivery comes while I'm out.","ja":"私が留守の間に荷物が届いたら教えて。"}],"39":[{"theme":"仕事","en":"Feel free to email me if anything comes up.","ja":"何かあったら遠慮なくメールくださいね。"},{"theme":"家族・友人","en":"Feel free to bring your kids to the party.","ja":"パーティーにお子さん連れてきて全然大丈夫だよ。"},{"theme":"食事","en":"Feel free to order whatever you want tonight.","ja":"今夜は好きなもの遠慮なく頼んでね。"},{"theme":"休日","en":"Feel free to stay at my place this weekend.","ja":"週末うちに泊まってくれて構わないよ。"},{"theme":"気持ち","en":"Feel free to tell me if you're feeling down.","ja":"落ち込んでたら遠慮なく言ってね。"},{"theme":"日常","en":"Feel free to use the kitchen anytime you like.","ja":"キッチンはいつでも自由に使ってね。"}],"40":[{"theme":"仕事","en":"Make sure to send the report before you leave.","ja":"帰る前に、必ずレポート送っておいてね。"},{"theme":"家族・友人","en":"Make sure to call your mom when you land.","ja":"着いたら必ずお母さんに電話してね。"},{"theme":"食事","en":"Make sure to put the leftovers in the fridge.","ja":"残り物は必ず冷蔵庫に入れといてね。"},{"theme":"休日","en":"Make sure to book the hotel before the weekend.","ja":"週末までに必ずホテル予約しておいてね。"},{"theme":"気持ち","en":"Make sure to tell her how you really feel.","ja":"自分の本当の気持ち、必ず彼女に伝えなよ。"},{"theme":"日常","en":"Make sure to lock the door when you go out.","ja":"出かけるときは必ず鍵かけてね。"}],"41":[{"theme":"仕事","en":"Don't forget to send that email before you leave.","ja":"帰る前にあのメール送るの忘れないでね。"},{"theme":"家族・友人","en":"Don't forget to call your mom on her birthday.","ja":"お母さんの誕生日に電話するの忘れないでね。"},{"theme":"食事","en":"Don't forget to take the chicken out of the freezer.","ja":"冷凍庫から鶏肉出しておくの忘れないでね。"},{"theme":"休日","en":"Don't forget to bring sunscreen to the beach tomorrow.","ja":"明日、海に日焼け止め持ってくるの忘れないでね。"},{"theme":"気持ち","en":"Don't forget to tell her how you really feel.","ja":"本当の気持ち、彼女にちゃんと伝えるの忘れないでね。"},{"theme":"日常","en":"Don't forget to lock the door when you go out.","ja":"出かけるとき、鍵かけるの忘れないでね。"}],"42":[{"theme":"仕事","en":"Go ahead and start the meeting without me.","ja":"私抜きで先に会議を始めちゃってください。"},{"theme":"家族・友人","en":"Go ahead and use my charger if you need it.","ja":"必要なら私の充電器、どうぞ使って。"},{"theme":"食事","en":"Go ahead and eat before the food gets cold.","ja":"冷めちゃうから、先に食べてていいよ。"},{"theme":"休日","en":"Go ahead and sleep in, we have no plans.","ja":"予定ないから、ゆっくり寝てていいよ。"},{"theme":"気持ち","en":"Go ahead and tell me what's really bothering you.","ja":"何が本当に気になってるのか、遠慮なく話して。"},{"theme":"日常","en":"Go ahead and sit down, I'll get the tea.","ja":"座っててください、お茶は私が持ってきます。"}],"43":[{"theme":"仕事","en":"Keep in mind that the client hates being kept waiting.","ja":"あのクライアント、待たされるのが大嫌いだから覚えておいてね。"},{"theme":"家族・友人","en":"Keep in mind that my mom goes to bed really early.","ja":"うちの母、すごく早く寝るってこと覚えておいてね。"},{"theme":"食事","en":"Keep in mind that this soup is way saltier than it looks.","ja":"このスープ、見た目よりずっとしょっぱいから覚えておいて。"},{"theme":"休日","en":"Keep in mind that the museum is closed on Mondays.","ja":"あの美術館、月曜は休みだってこと覚えておいてね。"},{"theme":"気持ち","en":"Keep in mind that he's still upset about yesterday.","ja":"彼、まだ昨日のこと怒ってるから覚えておいて。"},{"theme":"日常","en":"Keep in mind that the last train leaves before midnight.","ja":"終電、十二時前に出ちゃうってこと覚えておいてね。"}],"44":[{"theme":"仕事","en":"I just wanted to check if the meeting's still on.","ja":"会議がまだあるかちょっと確認したかっただけなんです。"},{"theme":"家族・友人","en":"I just wanted to hear your voice, that's all.","ja":"ちょっと声が聞きたかっただけだよ、それだけ。"},{"theme":"食事","en":"I just wanted to try that new ramen place nearby.","ja":"近くの新しいラーメン屋にちょっと行ってみたかっただけ。"},{"theme":"休日","en":"I just wanted to sleep in and do nothing today.","ja":"今日はちょっと寝坊して何もしたくなかっただけ。"},{"theme":"気持ち","en":"I just wanted to say sorry about last night.","ja":"昨日の夜のこと、ちょっと謝りたかっただけなんだ。"},{"theme":"日常","en":"I just wanted to grab some milk on the way home.","ja":"帰りにちょっと牛乳を買いたかっただけなんだよね。"}],"45":[{"theme":"仕事","en":"Can I go ahead and send this email to the client?","ja":"このメール、お客さんに送ってしまっていいですか？"},{"theme":"家族・友人","en":"Can I go ahead and tell Mom about the party?","ja":"パーティーのこと、お母さんに言っちゃっていい？"},{"theme":"食事","en":"Can I go ahead and start eating? It's getting cold.","ja":"先に食べ始めちゃっていい？冷めちゃうから。"},{"theme":"休日","en":"Can I go ahead and book the hotel for Saturday?","ja":"土曜のホテル、予約しちゃっていい？"},{"theme":"気持ち","en":"Can I go ahead and be honest with you about this?","ja":"これについて、正直に言っちゃっていいですか？"},{"theme":"日常","en":"Can I go ahead and throw away these old newspapers?","ja":"この古い新聞、捨てちゃっていい？"}],"46":[{"theme":"仕事","en":"It depends on how many meetings I have tomorrow.","ja":"明日の会議の数によるかな。"},{"theme":"家族・友人","en":"It depends on whether my wife can watch the kids.","ja":"妻が子供を見てくれるかどうかによるね。"},{"theme":"食事","en":"It depends on how hungry you are right now.","ja":"今どれくらいお腹すいてるかによるよ。"},{"theme":"休日","en":"It depends on the weather this weekend, honestly.","ja":"正直、今週末の天気によるね。"},{"theme":"気持ち","en":"It depends on my mood when I wake up.","ja":"起きたときの気分によるんだよね。"},{"theme":"日常","en":"It depends on how crowded the train is.","ja":"電車の混み具合によるかな。"}],"47":[{"theme":"仕事","en":"It turns out the meeting was cancelled this morning.","ja":"実は今朝、会議が中止になってたんだよ。"},{"theme":"家族・友人","en":"It turns out my sister was in Tokyo last week.","ja":"実は妹、先週東京に来てたらしいんだ。"},{"theme":"食事","en":"It turns out that restaurant closes early on Mondays.","ja":"あのお店、月曜は早く閉まるってわかったよ。"},{"theme":"休日","en":"It turns out the museum is free on Sundays.","ja":"あの美術館、日曜は無料なんだって。"},{"theme":"気持ち","en":"It turns out I was just tired, not angry.","ja":"実は怒ってたんじゃなくて、ただ疲れてただけだった。"},{"theme":"日常","en":"It turns out I left my umbrella at the station.","ja":"傘、駅に置いてきちゃってたことがわかったよ。"}],"48":[{"theme":"仕事","en":"It seems like the meeting got moved to Friday.","ja":"会議、金曜に変わったみたいだね。"},{"theme":"家族・友人","en":"It seems like my brother's still mad about yesterday.","ja":"弟、まだ昨日のこと怒ってるみたい。"},{"theme":"食事","en":"It seems like this place is closed on Mondays.","ja":"この店、月曜は休みみたいだよ。"},{"theme":"休日","en":"It seems like it's going to rain all weekend.","ja":"週末はずっと雨みたいだね。"},{"theme":"気持ち","en":"It seems like I'm the only one who's nervous.","ja":"緊張してるの、私だけみたいなんだけど。"},{"theme":"日常","en":"It seems like the train is running late again.","ja":"電車、また遅れてるみたいだね。"}],"49":[{"theme":"仕事","en":"It looks like we'll have to work late again tonight.","ja":"今夜もまた残業になりそうだね。"},{"theme":"家族・友人","en":"It looks like my sister forgot my birthday again.","ja":"妹、また私の誕生日忘れてるみたい。"},{"theme":"食事","en":"It looks like this restaurant is closed on Mondays.","ja":"このお店、月曜は休みみたいだね。"},{"theme":"休日","en":"It looks like it's going to rain all weekend.","ja":"週末はずっと雨みたいだね。"},{"theme":"気持ち","en":"It looks like you're not feeling well today.","ja":"今日、体調よくなさそうだね。"},{"theme":"日常","en":"It looks like the last train already left.","ja":"終電、もう行っちゃったみたい。"}],"50":[{"theme":"仕事","en":"It sounds like the meeting got moved to Friday.","ja":"会議が金曜に変わったみたいだね。"},{"theme":"家族・友人","en":"It sounds like your brother is really busy lately.","ja":"お兄さん、最近すごく忙しいみたいだね。"},{"theme":"食事","en":"It sounds like that new ramen place is worth trying.","ja":"あの新しいラーメン屋、行ってみる価値ありそうだね。"},{"theme":"休日","en":"It sounds like it's going to rain all weekend.","ja":"週末はずっと雨みたいだね。"},{"theme":"気持ち","en":"It sounds like you're pretty stressed about the exam.","ja":"試験のことでかなり参ってるみたいだね。"},{"theme":"日常","en":"It sounds like the train is delayed again this morning.","ja":"今朝もまた電車が遅れてるみたいだね。"}],"51":[{"theme":"仕事","en":"It's worth asking your boss before you start the project.","ja":"プロジェクトを始める前に、上司に聞いてみる価値はあるよ。"},{"theme":"家族・友人","en":"It's worth calling your mom, even just for five minutes.","ja":"五分だけでも、お母さんに電話する価値はあるよ。"},{"theme":"食事","en":"It's worth waiting in line for that ramen shop.","ja":"あのラーメン屋は並んで待つ価値があるよ。"},{"theme":"休日","en":"It's worth getting up early to see the sunrise.","ja":"日の出を見るために早起きする価値はあるよ。"},{"theme":"気持ち","en":"It's worth telling him how you really feel.","ja":"本当の気持ちを彼に伝える価値はあると思うよ。"},{"theme":"日常","en":"It's worth checking the weather before you leave home.","ja":"家を出る前に天気を確認しておく価値はあるよ。"}],"52":[{"theme":"仕事","en":"It's no wonder you're tired, you worked all weekend.","ja":"週末ずっと働いてたんだから、疲れるのも当然だよ。"},{"theme":"家族・友人","en":"It's no wonder your son loves soccer so much.","ja":"息子さんがサッカー大好きなのも当然だよね。"},{"theme":"食事","en":"It's no wonder this place is always packed at lunch.","ja":"この店がお昼いつも混んでるのも当然だね。"},{"theme":"休日","en":"It's no wonder the beach was crowded on a holiday.","ja":"祝日だし、海が混んでたのも当然だよ。"},{"theme":"気持ち","en":"It's no wonder she's upset after what you said.","ja":"あんなこと言われたら、彼女が怒るのも当然だよ。"},{"theme":"日常","en":"It's no wonder you're cold, you're not wearing a jacket.","ja":"上着着てないんだから、寒いのも当然でしょ。"}],"53":[{"theme":"仕事","en":"There's no way I can finish this report by tonight.","ja":"この報告書、今夜までに終わらせるのは絶対無理だよ。"},{"theme":"家族・友人","en":"There's no way my dad will let me borrow his car.","ja":"父さんが車を貸してくれるなんて絶対ないよ。"},{"theme":"食事","en":"There's no way I can eat all this by myself.","ja":"これ全部一人で食べるのは絶対無理だって。"},{"theme":"休日","en":"There's no way I'm getting up early on my day off.","ja":"休みの日に早起きなんて絶対しないよ。"},{"theme":"気持ち","en":"There's no way I'm not nervous before a big presentation.","ja":"大事なプレゼンの前に緊張しないわけないでしょ。"},{"theme":"日常","en":"There's no way we'll catch that train, it's already leaving.","ja":"あの電車はもう出るし、絶対間に合わないよ。"}],"54":[{"theme":"仕事","en":"There's a chance the meeting gets moved to Friday.","ja":"会議が金曜に動く可能性があるよ。"},{"theme":"家族・友人","en":"There's a chance my sister will stay with us tonight.","ja":"今夜、妹がうちに泊まる可能性があるんだ。"},{"theme":"食事","en":"There's a chance they're closed on Mondays, so let's check.","ja":"月曜は休みの可能性があるから、調べてみよう。"},{"theme":"休日","en":"There's a chance it'll rain, so bring a small umbrella.","ja":"雨が降る可能性があるから、折りたたみ傘持ってきて。"},{"theme":"気持ち","en":"There's a chance I'm just tired and overthinking this.","ja":"ただ疲れて考えすぎてるだけの可能性もあるけどね。"},{"theme":"日常","en":"There's a chance I left my keys at the office.","ja":"鍵、会社に置いてきた可能性があるんだよね。"}],"55":[{"theme":"仕事","en":"There's no point in staying late if nobody checks it.","ja":"誰も見ないなら、残業しても意味ないよ。"},{"theme":"家族・友人","en":"There's no point in arguing with my dad about this.","ja":"このことで父と言い合っても意味がないよ。"},{"theme":"食事","en":"There's no point in ordering more, we're already full.","ja":"もう満腹だし、これ以上頼んでも意味ないって。"},{"theme":"休日","en":"There's no point in going to the beach in this rain.","ja":"この雨の中、海に行っても意味ないよ。"},{"theme":"気持ち","en":"There's no point in worrying about things you can't change.","ja":"変えられないことを心配しても意味ないよ。"},{"theme":"日常","en":"There's no point in washing the car before a storm.","ja":"嵐の前に洗車しても意味ないでしょ。"}],"56":[{"theme":"仕事","en":"The thing is, I already promised to finish it today.","ja":"実はね、今日中に終わらせるって約束しちゃったんだ。"},{"theme":"家族・友人","en":"The thing is, my sister never answers her phone.","ja":"問題はね、妹が全然電話に出ないんだよ。"},{"theme":"食事","en":"The thing is, I can't really eat spicy food.","ja":"実はね、辛いものがあんまり食べられないんだ。"},{"theme":"休日","en":"The thing is, I'd rather just stay home this weekend.","ja":"実はね、今週末は家でゆっくりしたいんだよね。"},{"theme":"気持ち","en":"The thing is, I'm still a little upset about it.","ja":"実はね、まだちょっとそのこと引きずってるんだ。"},{"theme":"日常","en":"The thing is, the last train leaves at eleven.","ja":"問題はね、終電が十一時なんだよ。"}],"57":[{"theme":"仕事","en":"The good news is the meeting got moved to Friday.","ja":"いい知らせはね、会議が金曜に延びたんだ。"},{"theme":"家族・友人","en":"The good news is my sister's coming home this weekend.","ja":"いい知らせはね、妹が今週末帰ってくるの。"},{"theme":"食事","en":"The good news is there's still one slice of pizza left.","ja":"いい知らせはね、ピザがまだ一切れ残ってるよ。"},{"theme":"休日","en":"The good news is the rain should stop by Sunday.","ja":"いい知らせはね、日曜までには雨がやむみたい。"},{"theme":"気持ち","en":"The good news is I'm not as nervous as yesterday.","ja":"いい知らせはね、昨日ほど緊張してないんだ。"},{"theme":"日常","en":"The good news is I found my keys under the couch.","ja":"いい知らせはね、鍵がソファの下から出てきたよ。"}],"58":[{"theme":"仕事","en":"The bad news is the meeting got moved to Monday morning.","ja":"悪い知らせはね、会議が月曜の朝に変更になったんだ。"},{"theme":"家族・友人","en":"The bad news is my sister can't come to the wedding.","ja":"悪い知らせはね、妹が結婚式に来られないの。"},{"theme":"食事","en":"The bad news is they're out of the chicken curry today.","ja":"悪い知らせはね、今日チキンカレーが売り切れなんだ。"},{"theme":"休日","en":"The bad news is it's going to rain all weekend.","ja":"悪い知らせはね、週末はずっと雨みたいなんだ。"},{"theme":"気持ち","en":"The bad news is I'm still pretty nervous about tomorrow.","ja":"悪い知らせはね、明日のことまだけっこう緊張してるの。"},{"theme":"日常","en":"The bad news is the washing machine broke again this morning.","ja":"悪い知らせはね、今朝また洗濯機が壊れちゃったんだ。"}],"59":[{"theme":"仕事","en":"The train was delayed, that's why I came in late.","ja":"電車が遅れてね、だから遅刻して来たんだよ。"},{"theme":"家族・友人","en":"You never answer your phone, that's why I texted you.","ja":"電話に出ないじゃん、だからメッセージ送ったんだよ。"},{"theme":"食事","en":"I had a huge lunch, that's why I skipped dinner.","ja":"お昼を食べすぎてさ、だから晩ごはんは抜いたんだ。"},{"theme":"休日","en":"It rained all weekend, that's why I stayed home.","ja":"週末ずっと雨でさ、だから家にいたんだよ。"},{"theme":"気持ち","en":"I was really nervous, that's why I talked so much.","ja":"すごく緊張しててさ、だからあんなに喋っちゃったの。"},{"theme":"日常","en":"My alarm didn't go off, that's why I rushed out.","ja":"目覚ましが鳴らなくてさ、だって慌てて家を出たんだ。"}],"60":[{"theme":"仕事","en":"He raised his voice, and that's when I stopped arguing.","ja":"彼が声を荒げて、その時に言い返すのをやめたんだ。"},{"theme":"家族・友人","en":"She started crying, and that's when I hugged her.","ja":"彼女が泣き出して、その時に抱きしめたんだ。"},{"theme":"食事","en":"The soup smelled weird, and that's when I stopped eating.","ja":"スープが変な匂いがして、その時に食べるのをやめた。"},{"theme":"休日","en":"It started raining hard, and that's when I went home.","ja":"雨が強くなってきて、その時に家に帰ったんだ。"},{"theme":"気持ち","en":"Nobody called me back, and that's when I felt lonely.","ja":"誰も折り返してくれなくて、その時に寂しくなったんだ。"},{"theme":"日常","en":"The train just left, and that's when I gave up.","ja":"電車が出ちゃって、その時にもう諦めたよ。"}],"61":[{"theme":"仕事","en":"That's how I got this job, actually.","ja":"実は、そうやって私はこの仕事に就いたんです。"},{"theme":"家族・友人","en":"That's how I met my best friend in college.","ja":"そうやって私は大学で親友と出会ったんだ。"},{"theme":"食事","en":"That's how I make curry when I'm in a hurry.","ja":"急いでる時は、そうやってカレーを作るんだ。"},{"theme":"休日","en":"That's how I spend most of my Sundays lately.","ja":"最近の日曜は、だいたいそうやって過ごしてるよ。"},{"theme":"気持ち","en":"That's how I calm down when I get nervous.","ja":"緊張した時は、そうやって落ち着かせるんだ。"},{"theme":"日常","en":"That's how I wake up without an alarm every morning.","ja":"そうやって毎朝、目覚ましなしで起きてるんだ。"}],"62":[{"theme":"仕事","en":"Things have been really busy at work since last month.","ja":"先月から仕事がずっとバタバタなんだよね。"},{"theme":"家族・友人","en":"Things have been quiet since my son moved out.","ja":"息子が家を出てから、うち静かな感じだよ。"},{"theme":"食事","en":"Things have been kind of unhealthy — I eat out every night.","ja":"最近ちょっと不健康でさ、毎晩外食なんだ。"},{"theme":"休日","en":"Things have been so relaxing on my days off lately.","ja":"最近の休みはすごくのんびりできてるよ。"},{"theme":"気持ち","en":"Things have been a little tough for me lately, honestly.","ja":"正直、最近ちょっとしんどい感じなんだ。"},{"theme":"日常","en":"Things have been pretty much the same as always.","ja":"最近は相変わらずって感じかな。"}],"63":[{"theme":"仕事","en":"I had no idea the meeting was moved to nine.","ja":"会議が9時に変更になったなんて全然知らなかった。"},{"theme":"家族・友人","en":"I had no idea your sister got married last year.","ja":"お姉さんが去年結婚してたなんて全然知らなかったよ。"},{"theme":"食事","en":"I had no idea this soup was so spicy.","ja":"このスープがこんなに辛いなんて全然知らなかった。"},{"theme":"休日","en":"I had no idea the museum was closed on Mondays.","ja":"美術館が月曜休みだなんて全然知らなかった。"},{"theme":"気持ち","en":"I had no idea you were feeling that stressed.","ja":"そんなにストレス感じてたなんて全然気づかなかったよ。"},{"theme":"日常","en":"I had no idea it was already this late.","ja":"もうこんな時間だったなんて全然気づかなかった。"}],"64":[{"theme":"仕事","en":"I never thought I'd enjoy working from home this much.","ja":"在宅勤務がこんなに快適だとは思ってもみなかったよ。"},{"theme":"家族・友人","en":"I never thought I'd become friends with my old boss.","ja":"昔の上司と友達になるなんて思ってもみなかった。"},{"theme":"食事","en":"I never thought I'd like natto, but it's actually good.","ja":"納豆が好きになるなんてね、意外とおいしいんだ。"},{"theme":"休日","en":"I never thought I'd spend my whole weekend cleaning the garage.","ja":"週末まるごと物置の掃除で終わるとは思わなかったよ。"},{"theme":"気持ち","en":"I never thought I'd miss my hometown this much.","ja":"地元がこんなに恋しくなるとは思ってもみなかった。"},{"theme":"日常","en":"I never thought I'd get used to waking up at five.","ja":"五時起きに慣れる日が来るなんて思わなかったな。"}],"65":[{"theme":"仕事","en":"I ended up having to work late again last night.","ja":"昨日の夜も結局残業する羽目になったよ。"},{"theme":"家族・友人","en":"I ended up having to pick up my sister at midnight.","ja":"結局、夜中に妹を迎えに行かなきゃならなくなった。"},{"theme":"食事","en":"I ended up having to cook because the restaurant was closed.","ja":"お店が閉まってて、結局自分で作るはめになった。"},{"theme":"休日","en":"I ended up having to clean the whole house on Sunday.","ja":"日曜は結局、家中の掃除をするはめになった。"},{"theme":"気持ち","en":"I ended up having to apologize, even though I wasn't wrong.","ja":"悪くないのに、結局こっちが謝ることになったんだ。"},{"theme":"日常","en":"I ended up having to walk home because I missed the train.","ja":"電車を逃して、結局歩いて帰るはめになった。"}],"66":[{"theme":"仕事","en":"I'm gonna have to pass on the drinking party tonight.","ja":"今夜の飲み会は遠慮しておきます。"},{"theme":"家族・友人","en":"I'm gonna have to pass on your wedding, sorry.","ja":"ごめん、結婚式は遠慮させてもらうね。"},{"theme":"食事","en":"I'm gonna have to pass on dessert, I'm too full.","ja":"デザートは遠慮しとくよ、お腹いっぱいで。"},{"theme":"休日","en":"I'm gonna have to pass on camping this weekend.","ja":"今週末のキャンプは遠慮しておくね。"},{"theme":"気持ち","en":"I'm gonna have to pass on that, it feels risky.","ja":"それはちょっと遠慮しときます、リスクありそうで。"},{"theme":"日常","en":"I'm gonna have to pass on the free trial, thanks.","ja":"無料お試しは遠慮しておきます、ありがとう。"}],"67":[{"theme":"仕事","en":"I'll have to get back to you on the budget.","ja":"予算については、後でお返事させてください。"},{"theme":"家族・友人","en":"I'll have to get back to you on the wedding invite.","ja":"結婚式の招待の件は、後で返事するね。"},{"theme":"食事","en":"I'll have to get back to you on dinner tonight.","ja":"今夜のごはんのことは、後で連絡するね。"},{"theme":"休日","en":"I'll have to get back to you on the trip dates.","ja":"旅行の日程については、後で返事するよ。"},{"theme":"気持ち","en":"I'll have to get back to you on how I feel.","ja":"自分の気持ちについては、少し考えてから返事するね。"},{"theme":"日常","en":"I'll have to get back to you on Saturday's soccer practice.","ja":"土曜のサッカーの練習の件は、後で連絡します。"}],"68":[{"theme":"仕事","en":"I'm not really into these long team meetings.","ja":"こういう長いチーム会議、あんまり好きじゃないんだよね。"},{"theme":"家族・友人","en":"I'm not really into big family gatherings, to be honest.","ja":"正直、親戚の大きい集まりってあんまり得意じゃないんだ。"},{"theme":"食事","en":"I'm not really into spicy food, so maybe ramen?","ja":"辛いものはあんまり好きじゃないから、ラーメンとかどう？"},{"theme":"休日","en":"I'm not really into camping, but I'll go with you.","ja":"キャンプはあんまり好きじゃないけど、一緒に行くよ。"},{"theme":"気持ち","en":"I'm not really into parties when I'm this tired.","ja":"こんなに疲れてる時は、飲み会って気分じゃないんだよね。"},{"theme":"日常","en":"I'm not really into shopping on weekends; it's too crowded.","ja":"週末の買い物はあんまり好きじゃない、混みすぎてて。"}],"69":[{"theme":"仕事","en":"I'd say the meeting will take about an hour.","ja":"会議は一時間くらいかかると思うよ。"},{"theme":"家族・友人","en":"I'd say my brother looks more like our dad.","ja":"弟の方がお父さんに似てると思うな。"},{"theme":"食事","en":"I'd say this ramen is the best around here.","ja":"このラーメン、この辺じゃ一番だと思う。"},{"theme":"休日","en":"I'd say Sunday morning is the best time to go.","ja":"日曜の朝に行くのが一番いいと思うよ。"},{"theme":"気持ち","en":"I'd say I'm more nervous than excited right now.","ja":"今はワクワクよりも緊張の方が大きいかな。"},{"theme":"日常","en":"I'd say it's a ten-minute walk from the station.","ja":"駅から歩いて十分くらいかな。"}],"70":[{"theme":"仕事","en":"It's hard to say when the project will actually finish.","ja":"このプロジェクトがいつ終わるかは、なんとも言えないですね。"},{"theme":"家族・友人","en":"It's hard to say if my brother will come home.","ja":"弟が帰ってくるかどうかは、なんとも言えないな。"},{"theme":"食事","en":"It's hard to say which restaurant is better, honestly.","ja":"正直、どっちのお店がいいかはなんとも言えないよ。"},{"theme":"休日","en":"It's hard to say what I'll do this weekend yet.","ja":"今週末なにするかは、まだなんとも言えないんだ。"},{"theme":"気持ち","en":"It's hard to say how I feel about it now.","ja":"今それについてどう思ってるかは、なんとも言えないな。"},{"theme":"日常","en":"It's hard to say if it'll rain later today.","ja":"今日この後雨が降るかは、なんとも言えないね。"}],"71":[{"theme":"仕事","en":"I hate to say it, but we're going to miss the deadline.","ja":"言いたくないんだけど、この締め切り、間に合わないと思う。"},{"theme":"家族・友人","en":"I hate to say it, but your brother was right this time.","ja":"言いたくないけど、今回はお兄さんの言う通りだったね。"},{"theme":"食事","en":"I hate to say it, but this soup needs a lot more salt.","ja":"言いたくないんだけど、このスープ、塩がぜんぜん足りないよ。"},{"theme":"休日","en":"I hate to say it, but it's going to rain all weekend.","ja":"言いたくないけど、週末はずっと雨みたいだよ。"},{"theme":"気持ち","en":"I hate to say it, but I'm not really excited about this.","ja":"言いたくないんだけど、これ、あんまり乗り気じゃないんだよね。"},{"theme":"日常","en":"I hate to say it, but you left the lights on again.","ja":"言いたくないけど、また電気つけっぱなしだったよ。"}],"72":[{"theme":"仕事","en":"I'm on the fence about taking that new position.","ja":"あの新しいポジションを受けるか、まだ迷ってるんだよね。"},{"theme":"家族・友人","en":"I'm on the fence about inviting my parents this weekend.","ja":"今週末、親を呼ぶかどうか迷ってるんだ。"},{"theme":"食事","en":"I'm on the fence about ordering dessert after this.","ja":"このあとデザート頼むか、ちょっと迷ってる。"},{"theme":"休日","en":"I'm on the fence about going to the beach tomorrow.","ja":"明日、海に行くかどうか迷ってるんだよね。"},{"theme":"気持ち","en":"Honestly, I'm on the fence about how I feel.","ja":"正直、自分の気持ちがどうなのか迷ってるんだ。"},{"theme":"日常","en":"I'm on the fence about buying a new phone now.","ja":"今スマホを買い替えるか、まだ迷ってる。"}],"73":[{"theme":"仕事","en":"I could go either way on the new office layout.","ja":"新しいオフィスのレイアウトは、正直どっちでもいいかな。"},{"theme":"家族・友人","en":"I could go either way on inviting my cousins too.","ja":"いとこたちも呼ぶかどうかは、どっちでもいいよ。"},{"theme":"食事","en":"I could go either way on pizza or sushi tonight.","ja":"今夜はピザでも寿司でも、どっちでもいいよ。"},{"theme":"休日","en":"I could go either way on going out this weekend.","ja":"今週末、出かけるかどうかはどっちでもいいな。"},{"theme":"気持ち","en":"Honestly, I could go either way on that whole thing.","ja":"正直、あの件はどっちでもいいと思ってる。"},{"theme":"日常","en":"I could go either way on which train we take.","ja":"どっちの電車に乗るかは、どっちでもいいよ。"}],"74":[{"theme":"仕事","en":"I wouldn't say the meeting went badly, honestly.","ja":"正直、会議がうまくいかなかったとは言えないかな。"},{"theme":"家族・友人","en":"I wouldn't say we're close, but we talk sometimes.","ja":"仲がいいとは言えないけど、たまに話すよ。"},{"theme":"食事","en":"I wouldn't say it's spicy, just a little warm.","ja":"辛いとは言えないかな、ちょっとピリッとするくらい。"},{"theme":"休日","en":"I wouldn't say I rested much this weekend.","ja":"今週末はあんまり休めたとは言えないかな。"},{"theme":"気持ち","en":"I wouldn't say I'm angry, just a bit disappointed.","ja":"怒ってるとは言えないかな、ちょっとがっかりしてるだけ。"},{"theme":"日常","en":"I wouldn't say I'm busy, but my days fill up.","ja":"忙しいとは言えないけど、けっこう予定は埋まるんだよね。"}],"75":[{"theme":"仕事","en":"Not necessarily every day, but I usually work late.","ja":"必ずしも毎日ってわけじゃないけど、たいてい残業してるよ。"},{"theme":"家族・友人","en":"Not necessarily my best friend, just someone I trust.","ja":"必ずしも親友ってわけじゃなくて、ただ信頼できる人かな。"},{"theme":"食事","en":"Not necessarily expensive food, but I want something tasty.","ja":"必ずしも高い料理じゃなくていいけど、おいしいものが食べたい。"},{"theme":"休日","en":"Not necessarily a trip — sometimes I just stay home.","ja":"必ずしも旅行ってわけじゃなくて、家にいるだけの時もあるよ。"},{"theme":"気持ち","en":"Not necessarily angry, I'm just a little tired today.","ja":"別に怒ってるわけじゃなくて、今日はちょっと疲れてるだけ。"},{"theme":"日常","en":"Not necessarily早い — I sometimes wake up at noon.","ja":"必ずしも早起きじゃなくて、昼に起きる日もあるよ。"}],"76":[{"theme":"仕事","en":"Now that you mention it, he skipped the meeting yesterday too.","ja":"そう言えば、彼、昨日の会議も休んでたね。"},{"theme":"家族・友人","en":"Now that you mention it, my sister hasn't called me in weeks.","ja":"そう言えば、妹から何週間も電話がないな。"},{"theme":"食事","en":"Now that you mention it, this soup does taste a little salty.","ja":"そう言えば、このスープちょっとしょっぱいかも。"},{"theme":"休日","en":"Now that you mention it, we haven't been to the beach this year.","ja":"そう言えば、今年まだ海に行ってないね。"},{"theme":"気持ち","en":"Now that you mention it, I have been kind of stressed lately.","ja":"そう言えば、最近ちょっとストレスたまってるかも。"},{"theme":"日常","en":"Now that you mention it, I forgot to lock the front door.","ja":"そう言えば、玄関の鍵かけるの忘れてた。"}],"77":[{"theme":"仕事","en":"Come to think of it, I never sent that email yesterday.","ja":"よく考えてみたら、昨日あのメール送ってなかったわ。"},{"theme":"家族・友人","en":"Come to think of it, my sister's birthday is next week.","ja":"そういえばよく考えたら、来週妹の誕生日だ。"},{"theme":"食事","en":"Come to think of it, I haven't eaten since breakfast today.","ja":"よく考えたら、今日は朝から何も食べてないな。"},{"theme":"休日","en":"Come to think of it, we haven't been to the beach lately.","ja":"よく考えてみたら、最近海に行ってないね。"},{"theme":"気持ち","en":"Come to think of it, I was pretty nervous about that meeting.","ja":"よく考えてみると、あの会議、結構緊張してたな。"},{"theme":"日常","en":"Come to think of it, I think I left the window open.","ja":"よく考えたら、窓開けっぱなしにしてきた気がする。"}],"78":[{"theme":"仕事","en":"The commute is long, not to mention all the overtime.","ja":"通勤は長いし、残業だってもちろん多いんだよ。"},{"theme":"家族・友人","en":"She helped me move, not to mention lending me money.","ja":"彼女、引っ越しを手伝ってくれたし、お金まで貸してくれたんだ。"},{"theme":"食事","en":"This place is cheap, not to mention the huge portions.","ja":"ここ安いし、量が多いのはもちろんだよね。"},{"theme":"休日","en":"The hotel was nice, not to mention the amazing view.","ja":"ホテルもよかったし、景色なんて最高だったよ。"},{"theme":"気持ち","en":"I'm nervous about the interview, not to mention totally exhausted.","ja":"面接が不安なのはもちろん、もうくたくただよ。"},{"theme":"日常","en":"My phone's dying, not to mention I forgot my wallet.","ja":"スマホの電池もヤバいし、財布まで忘れちゃった。"}],"79":[{"theme":"仕事","en":"I missed the train, and on top of that, my laptop died.","ja":"電車に乗り遅れて、その上パソコンの電源まで落ちたんだ。"},{"theme":"家族・友人","en":"She helped me move, and on top of that, she brought lunch.","ja":"彼女、引っ越し手伝ってくれて、その上お昼まで持ってきてくれたの。"},{"theme":"食事","en":"The food was cold, and on top of that, the coffee tasted burnt.","ja":"料理は冷めてたし、その上コーヒーは焦げた味がしたよ。"},{"theme":"休日","en":"It rained all weekend, and on top of that, my car broke down.","ja":"週末ずっと雨で、その上車まで故障したんだよ。"},{"theme":"気持ち","en":"I'm really tired, and on top of that, I feel kind of lonely.","ja":"すごく疲れてて、その上なんだか寂しい気分なんだ。"},{"theme":"日常","en":"I forgot my wallet, and on top of that, my phone was dead.","ja":"財布を忘れて、その上スマホの充電も切れてたの。"}],"80":[{"theme":"仕事","en":"Now that the project's done, I can finally relax.","ja":"プロジェクトが終わったから、やっとゆっくりできるよ。"},{"theme":"家族・友人","en":"Now that my son's in school, I have more free time.","ja":"息子が学校に通い始めたから、自由な時間が増えたの。"},{"theme":"食事","en":"Now that I'm cooking at home, I feel a lot healthier.","ja":"家で自炊するようになってから、体の調子がいいんだ。"},{"theme":"休日","en":"Now that it's warmer, let's go hiking this weekend.","ja":"暖かくなったし、今週末ハイキングに行こうよ。"},{"theme":"気持ち","en":"Now that I've told her the truth, I feel much lighter.","ja":"彼女に本当のことを言えたから、すごく気が楽になった。"},{"theme":"日常","en":"Now that I live near the station, I never take the bus.","ja":"駅の近くに引っ越したから、もうバスは使わないんだ。"}],"81":[{"theme":"仕事","en":"At the end of the day, it's just a job.","ja":"結局のところ、ただの仕事だからね。"},{"theme":"家族・友人","en":"At the end of the day, family always comes first.","ja":"結局のところ、家族が一番だよ。"},{"theme":"食事","en":"At the end of the day, home cooking tastes the best.","ja":"結局のところ、家のごはんが一番おいしいね。"},{"theme":"休日","en":"At the end of the day, I just want to relax.","ja":"結局のところ、休みの日はゆっくりしたいだけなんだ。"},{"theme":"気持ち","en":"At the end of the day, I'm still pretty happy.","ja":"結局のところ、わりと満足してるよ。"},{"theme":"日常","en":"At the end of the day, sleep fixes almost everything.","ja":"結局のところ、寝ればだいたい何とかなるよ。"}],"82":[{"theme":"仕事","en":"Either way, I have to finish this report tonight.","ja":"どっちにしても、このレポートは今夜中に終わらせなきゃ。"},{"theme":"家族・友人","en":"Either way, my mom's going to call me tonight.","ja":"どちらにしても、母さんは今夜電話してくるよ。"},{"theme":"食事","en":"Either way, let's eat something before the movie starts.","ja":"どっちにしても、映画の前に何か食べようよ。"},{"theme":"休日","en":"Either way, I just want to sleep in on Sunday.","ja":"どちらにしても、日曜はゆっくり寝ていたいな。"},{"theme":"気持ち","en":"Either way, I'm a little nervous about tomorrow.","ja":"どっちにしても、明日はちょっと緊張してるんだ。"},{"theme":"日常","en":"Either way, we should leave now to catch the train.","ja":"どちらにしても、電車に乗るならもう出ないとね。"}],"83":[{"theme":"仕事","en":"As far as I know, the meeting is still at three.","ja":"私が知る限り、会議はまだ三時のままだよ。"},{"theme":"家族・友人","en":"As far as I know, my sister's still living in Osaka.","ja":"私が知る限り、姉はまだ大阪に住んでるよ。"},{"theme":"食事","en":"As far as I know, this place doesn't take credit cards.","ja":"私が知る限り、この店はカード使えないよ。"},{"theme":"休日","en":"As far as I know, the museum is closed on Mondays.","ja":"私が知る限り、あの美術館は月曜休みだよ。"},{"theme":"気持ち","en":"As far as I know, he's not mad at you at all.","ja":"私が知る限り、彼は全然怒ってないと思うよ。"},{"theme":"日常","en":"As far as I know, the last train leaves around midnight.","ja":"私が知る限り、終電は十二時ごろだったはず。"}],"84":[{"theme":"仕事","en":"As long as you send it by Friday, it's fine.","ja":"金曜までに送ってくれれば、それで大丈夫だよ。"},{"theme":"家族・友人","en":"As long as the kids are healthy, I'm happy.","ja":"子供たちが元気でいてくれれば、それでいいの。"},{"theme":"食事","en":"As long as it's not too spicy, I'll eat anything.","ja":"辛すぎなければ、何でも食べるよ。"},{"theme":"休日","en":"As long as it doesn't rain, let's go to the beach.","ja":"雨さえ降らなければ、海に行こうよ。"},{"theme":"気持ち","en":"As long as you're with me, I don't feel nervous.","ja":"君が一緒にいてくれれば、緊張しないんだ。"},{"theme":"日常","en":"As long as I get seven hours, I feel fine.","ja":"七時間寝られれば、それで調子いいんだよね。"}],"85":[{"theme":"仕事","en":"The client's late, so in the meantime let's review the slides.","ja":"クライアントが遅れてるから、その間にスライドを見直そう。"},{"theme":"家族・友人","en":"I'll pick up Mom. In the meantime, can you clean up?","ja":"お母さんを迎えに行くから、その間に片付けといてくれる？"},{"theme":"食事","en":"The pizza takes thirty minutes. In the meantime, have some chips.","ja":"ピザは三十分かかるから、とりあえずポテチでも食べてて。"},{"theme":"休日","en":"It's still raining, so in the meantime we'll watch a movie.","ja":"まだ雨だし、その間に映画でも観ようか。"},{"theme":"気持ち","en":"Results come Friday. In the meantime, I'm trying not to worry.","ja":"結果は金曜だから、それまでは気にしないようにしてる。"},{"theme":"日常","en":"The washer's still running. In the meantime, I'll take a shower.","ja":"洗濯機まだ回ってるから、その間にシャワー浴びちゃう。"}],"86":[{"theme":"仕事","en":"What's the point of having a meeting with no agenda?","ja":"議題もない会議やる意味ある？"},{"theme":"家族・友人","en":"What's the point of arguing with my brother about this?","ja":"こんなことで弟と言い合う意味ある？"},{"theme":"食事","en":"What's the point of ordering a salad with fried chicken?","ja":"唐揚げ頼んでサラダも頼む意味ある？"},{"theme":"休日","en":"What's the point of going to the beach in this rain?","ja":"この雨の中、海行く意味ある？"},{"theme":"気持ち","en":"What's the point of worrying about something I can't change?","ja":"変えられないことで悩む意味ある？"},{"theme":"日常","en":"What's the point of cleaning now? The kids will mess it up.","ja":"今掃除する意味ある？どうせ子供が散らかすよ。"}],"87":[{"theme":"仕事","en":"What am I supposed to say in tomorrow's meeting?","ja":"明日の会議で、私は何を言えばいいの？"},{"theme":"家族・友人","en":"What am I supposed to get my mom for her birthday?","ja":"母の誕生日、何をあげたらいいんだろう？"},{"theme":"食事","en":"What am I supposed to do with all these leftovers?","ja":"この残り物、全部どうすればいいの？"},{"theme":"休日","en":"What am I supposed to do on a rainy Sunday?","ja":"雨の日曜日って、何して過ごせばいいの？"},{"theme":"気持ち","en":"What am I supposed to feel when he says that?","ja":"彼にそう言われて、どう感じればいいわけ？"},{"theme":"日常","en":"What am I supposed to press to turn this thing on?","ja":"これ、どこを押せば電源が入るの？"}],"88":[{"theme":"仕事","en":"How am I supposed to finish this by tomorrow morning?","ja":"これ、どうやって明日の朝までに終わらせればいいの？"},{"theme":"家族・友人","en":"How am I supposed to tell my mom about this?","ja":"これ、どうやって母さんに話せばいいんだろう。"},{"theme":"食事","en":"How am I supposed to eat this without a fork?","ja":"これ、フォークなしでどうやって食べればいいの？"},{"theme":"休日","en":"How am I supposed to relax with the kids screaming?","ja":"子どもがこんなに騒いでて、どうやってゆっくりしろって言うの？"},{"theme":"気持ち","en":"How am I supposed to stay calm after hearing that?","ja":"あんなこと聞いて、どうやって落ち着いていられるの？"},{"theme":"日常","en":"How am I supposed to get home if the trains stop?","ja":"電車が止まったら、どうやって家に帰ればいいの？"}],"89":[{"theme":"仕事","en":"Let's meet at three or four, whatever works for you.","ja":"3時でも4時でも、都合のいい方で会いましょう。"},{"theme":"家族・友人","en":"We can drive or take the train, whatever works for everyone.","ja":"車でも電車でも、みんなが良ければどっちでもいいよ。"},{"theme":"食事","en":"Pizza or ramen tonight, whatever works for the kids.","ja":"今夜はピザでもラーメンでも、子どもたちが喜ぶ方でいいよ。"},{"theme":"休日","en":"Saturday or Sunday, whatever works for your schedule is fine.","ja":"土曜でも日曜でも、君の予定に合う方でいいよ。"},{"theme":"気持ち","en":"Don't push yourself; whatever works for you is enough.","ja":"無理しないで。自分に合うやり方でいいんだよ。"},{"theme":"日常","en":"You can pay by card or cash, whatever works for you.","ja":"カードでも現金でも、やりやすい方でどうぞ。"}],"90":[{"theme":"仕事","en":"I'm starting to get used to the new system.","ja":"新しいシステムにだんだん慣れてきたよ。"},{"theme":"家族・友人","en":"I'm starting to sound just like my mother.","ja":"最近、母親とそっくりな話し方になってきた。"},{"theme":"食事","en":"I'm starting to like spicy food a little more.","ja":"辛い物がちょっとずつ好きになってきたんだ。"},{"theme":"休日","en":"I'm starting to look forward to Sunday already.","ja":"もう日曜日が楽しみになってきちゃった。"},{"theme":"気持ち","en":"I'm starting to feel a bit nervous about tomorrow.","ja":"明日のこと、ちょっと緊張してきたよ。"},{"theme":"日常","en":"I'm starting to wake up before my alarm goes off.","ja":"目覚ましが鳴る前に起きるようになってきた。"}],"91":[{"theme":"仕事","en":"I can't believe the meeting got moved to Monday.","ja":"会議が月曜に変わったなんて信じられないよ。"},{"theme":"家族・友人","en":"I can't believe my brother's getting married next spring.","ja":"弟が来年の春に結婚するなんて信じられない。"},{"theme":"食事","en":"I can't believe we ate that whole pizza ourselves.","ja":"あのピザ、二人で全部食べたなんて信じられない。"},{"theme":"休日","en":"I can't believe it's raining again on my day off.","ja":"休みの日にまた雨とか、信じられないんだけど。"},{"theme":"気持ち","en":"I can't believe I'm still nervous about this after ten years.","ja":"十年やってて、まだ緊張するなんて信じられないよ。"},{"theme":"日常","en":"I can't believe I left my phone at the station.","ja":"駅にスマホ置いてきたなんて、信じられない。"}],"92":[{"theme":"仕事","en":"I honestly can't finish this report by tomorrow.","ja":"正直、この報告書、明日までには終わらないよ。"},{"theme":"家族・友人","en":"I honestly can't say no to my mom.","ja":"正直、母には断れないんだよね。"},{"theme":"食事","en":"I honestly can't eat another bite of this.","ja":"正直、これもう一口も食べられない。"},{"theme":"休日","en":"I honestly can't get up early on my days off.","ja":"正直、休みの日は早起きできないんだよ。"},{"theme":"気持ち","en":"I honestly can't stop thinking about what he said.","ja":"正直、彼に言われたこと、頭から離れないんだ。"},{"theme":"日常","en":"I honestly can't remember where I put my keys.","ja":"正直、鍵どこ置いたか思い出せないんだよね。"}],"93":[{"theme":"仕事","en":"I seriously need a break from these meetings.","ja":"この会議続き、マジでちょっと休憩したい。"},{"theme":"家族・友人","en":"I seriously thought you forgot my birthday this year.","ja":"今年はマジで誕生日忘れられたと思ってた。"},{"theme":"食事","en":"I seriously can't eat another bite of this.","ja":"これ、マジでもう一口も食べられない。"},{"theme":"休日","en":"I seriously just want to sleep all day Sunday.","ja":"日曜はマジで一日中寝ていたいだけ。"},{"theme":"気持ち","en":"I seriously don't know what to do right now.","ja":"今、マジでどうしたらいいか分かんない。"},{"theme":"日常","en":"I seriously lose my keys like twice a week.","ja":"マジで週二回くらい鍵なくしてるんだよね。"}],"94":[{"theme":"仕事","en":"I'm kind of struggling with this new system at work.","ja":"職場の新しいシステム、ちょっと苦戦してる感じなんだよね。"},{"theme":"家族・友人","en":"I'm kind of avoiding my sister since we argued last week.","ja":"先週ケンカしてから、姉とはちょっと距離を置いてる感じ。"},{"theme":"食事","en":"I'm kind of cutting back on rice these days.","ja":"最近ちょっとご飯の量を減らしてる感じなんだ。"},{"theme":"休日","en":"I'm kind of planning a short trip for next weekend.","ja":"来週末、ちょっと小旅行を計画してる感じかな。"},{"theme":"気持ち","en":"I'm kind of regretting what I said to him yesterday.","ja":"昨日彼に言ったこと、ちょっと後悔してる感じ。"},{"theme":"日常","en":"I'm kind of waiting for a package, so I'll stay home.","ja":"荷物をちょっと待ってる感じだから、家にいるよ。"}],"95":[{"theme":"仕事","en":"I sort of knew this project would get delayed.","ja":"このプロジェクト、なんとなく遅れる気がしてたんだよね。"},{"theme":"家族・友人","en":"I sort of miss living with my parents sometimes.","ja":"たまに、なんとなく実家暮らしが恋しくなるんだ。"},{"theme":"食事","en":"I sort of want something spicy for lunch today.","ja":"今日のお昼、なんとなく辛いものが食べたい気分。"},{"theme":"休日","en":"I sort of just stayed home and did nothing.","ja":"休みの日は、なんとなく家でダラダラしてただけ。"},{"theme":"気持ち","en":"I sort of feel bad about what I said yesterday.","ja":"昨日言ったこと、なんとなく悪かったなって思ってる。"},{"theme":"日常","en":"I sort of forgot where I put my keys again.","ja":"また鍵をどこに置いたか、なんとなく忘れちゃった。"}],"96":[{"theme":"仕事","en":"Sorry, I'm in the middle of writing a report right now.","ja":"ごめん、今ちょうど報告書を書いてる途中なんだ。"},{"theme":"家族・友人","en":"I'm in the middle of talking to my mom, hang on.","ja":"今お母さんと話してる途中だから、ちょっと待って。"},{"theme":"食事","en":"I'm in the middle of eating lunch, can I call back?","ja":"今お昼食べてる途中なんだけど、かけ直してもいい？"},{"theme":"休日","en":"I'm in the middle of cleaning my room, so it's messy.","ja":"今部屋を片付けてる途中だから、散らかってるよ。"},{"theme":"気持ち","en":"I'm in the middle of figuring out what I really want.","ja":"自分が本当に何をしたいのか、今考えてる途中なんだ。"},{"theme":"日常","en":"I'm in the middle of doing laundry, give me ten minutes.","ja":"今洗濯してる途中だから、あと十分ちょうだい。"}],"97":[{"theme":"仕事","en":"I've been meaning to talk to my boss about this.","ja":"この件、ずっと上司に話そうと思ってたんだ。"},{"theme":"家族・友人","en":"I've been meaning to call my mom all week.","ja":"今週ずっと母さんに電話しようと思ってたんだよね。"},{"theme":"食事","en":"I've been meaning to try that new ramen place.","ja":"あの新しいラーメン屋、ずっと行こうと思ってたんだ。"},{"theme":"休日","en":"I've been meaning to clean out my closet on Sunday.","ja":"日曜にクローゼット片づけようとずっと思ってたんだけどね。"},{"theme":"気持ち","en":"I've been meaning to say thanks for the other day.","ja":"この前のお礼、ずっと言おうと思ってたんだ。"},{"theme":"日常","en":"I've been meaning to get my hair cut for weeks.","ja":"何週間も前から髪切りに行こうと思ってたんだよ。"}],"98":[{"theme":"仕事","en":"I'm better off finishing this report tonight than tomorrow.","ja":"この報告書、明日より今夜のうちに終わらせた方がいいな。"},{"theme":"家族・友人","en":"I'm better off calling my mom before she gets worried.","ja":"母さんが心配する前に電話しといた方がいいね。"},{"theme":"食事","en":"I'm better off cooking at home than eating out tonight.","ja":"今夜は外食より家で作った方がいいかな。"},{"theme":"休日","en":"I'm better off staying home this weekend and just relaxing.","ja":"今週末は家でゆっくりしてた方がいいや。"},{"theme":"気持ち","en":"I'm better off telling him how I really feel.","ja":"彼には本当の気持ちを言った方がいい気がする。"},{"theme":"日常","en":"I'm better off taking the train than driving downtown.","ja":"街まで車で行くより電車の方がいいよ。"}],"99":[{"theme":"仕事","en":"It's not like I hate my job, I'm just tired.","ja":"仕事が嫌いってわけじゃないし、ただ疲れてるだけ。"},{"theme":"家族・友人","en":"It's not like we fought, we just don't talk much.","ja":"ケンカしたわけじゃないし、ただあんまり話さないだけ。"},{"theme":"食事","en":"It's not like I'm on a diet, I'm just full.","ja":"ダイエット中ってわけじゃないし、ただお腹いっぱいなだけ。"},{"theme":"休日","en":"It's not like I have plans, so let's meet up.","ja":"別に予定があるわけじゃないし、会おうよ。"},{"theme":"気持ち","en":"It's not like I'm angry, I just needed some space.","ja":"怒ってるわけじゃないし、ちょっと一人になりたかっただけ。"},{"theme":"日常","en":"It's not like it's far, we can just walk there.","ja":"遠いわけじゃないし、歩いて行けばいいよ。"}],"100":[{"theme":"仕事","en":"I can't afford to make another mistake at work.","ja":"仕事でこれ以上ミスするわけにはいかないんだ。"},{"theme":"家族・友人","en":"I can't afford to miss my sister's wedding.","ja":"妹の結婚式を欠席するわけにはいかないよ。"},{"theme":"食事","en":"I can't afford to eat out every single night.","ja":"毎晩外食する余裕なんてないよ。"},{"theme":"休日","en":"I can't afford to take a trip this month.","ja":"今月は旅行に行く余裕がないんだ。"},{"theme":"気持ち","en":"I can't afford to worry about what everyone thinks.","ja":"みんなにどう思われるか気にしてる余裕はないよ。"},{"theme":"日常","en":"I can't afford to buy a new phone right now.","ja":"今は新しいスマホを買う余裕がないんだ。"}]};
+</script>
+<script>
+"use strict";
+const KEY="otopack.m1", GOAL=10, RING=2*Math.PI*56;
+let S={}, cur=null, filter="all", T=null, VOICES=[];
+const seen={p1:false,p2:false};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const day=()=>new Date().toLocaleDateString("sv-SE");
+const pad=n=>String(n).padStart(3,"0");
+
+/* ── store ── */
+function load(){
+  const base={v:1,pkgs:{},days:{},today:{date:"",nos:[]},voice:"Samantha",tip:0};
+  try{S=Object.assign(base,JSON.parse(localStorage.getItem(KEY))||{});}catch{S=base;}
+}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch{}};
+function rec(no){
+  if(!S.pkgs[no]) S.pkgs[no]={reads:0,my:{en:"",ja:""},cleared:false,at:""};
+  return S.pkgs[no];
+}
+const cleared=()=>PKGS.filter(p=>rec(p.no).cleared);
+const reads=()=>Object.values(S.pkgs).reduce((a,r)=>a+(r.reads||0),0);
+const mine=()=>Object.values(S.pkgs).filter(r=>(r.my?.en||"").trim()).length;
+function streak(){
+  let n=0; const d=new Date();
+  if(!S.days[day()]) d.setDate(d.getDate()-1);
+  while(S.days[d.toLocaleDateString("sv-SE")]){n++;d.setDate(d.getDate()-1);}
+  return n;
+}
+
+/* ── speech ── */
+function loadVoices(){VOICES=speechSynthesis.getVoices().filter(v=>v.lang.startsWith("en"));}
+speechSynthesis.onvoiceschanged=loadVoices; loadVoices();
+const pickVoice=()=>VOICES.find(v=>v.name===S.voice)||VOICES.find(v=>v.name.startsWith("Samantha"))
+  ||VOICES.find(v=>v.lang==="en-US")||VOICES[0];
+function say(text,rate=1){
+  if(!text)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  const v=pickVoice(); if(v){u.voice=v;u.lang=v.lang;}
+  u.rate=rate; speechSynthesis.speak(u);
+}
+
+/* ── nav ── */
+const TABS=[["home","🎲","すごろく"],["dex","📗","図鑑"],["test","🎧","テスト"]];
+$("nav").innerHTML=TABS.map(([k,i,l])=>
+  `<button data-go="${k}"><i>${i}</i>${l}</button>`).join("");
+function show(v){
+  document.querySelectorAll(".view").forEach(m=>m.classList.toggle("on",m.id==="v-"+v));
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.go===v));
+  speechSynthesis.cancel(); scrollTo({top:0});
+}
+$("nav").onclick=e=>{
+  const b=e.target.closest("[data-go]"); if(!b)return;
+  const v=b.dataset.go; show(v);
+  if(v==="home")home(); if(v==="dex")dex(); if(v==="test")testHome();
+};
+
+/* ── home ── */
+function home(){
+  const n=cleared().length;
+  $("k-done").textContent=n; $("k-rail").style.width=n+"%";
+  $("k-streak").textContent=streak(); $("k-reads").textContent=reads();
+  $("k-my").textContent=mine();
+  board(); today();
+}
+const nowNo=()=>(PKGS.find(p=>!rec(p.no).cleared)||{no:100}).no;
+
+function board(){
+  const now=nowNo(), b=$("board"); b.innerHTML="";
+  for(let r=0;r<20;r++){             // 上が No.1、下が No.100
+    const row=document.createElement("div");
+    row.className="brow "+(r%2===0?"r":"l");
+    const tr=document.createElement("div"); tr.className="btrack"; row.appendChild(tr);
+    let ns=[1,2,3,4,5].map(c=>r*5+c);
+    if(r%2===1) ns.reverse();
+    for(const no of ns){
+      const p=PKGS[no-1], rc=rec(no);
+      const t=document.createElement("button");
+      t.className="tile l"+p.level+(rc.cleared?" done":"")+(no===now?" now":"")+(no%10===0?" mile":"");
+      t.textContent=no;
+      t.setAttribute("aria-label",`No.${pad(no)} ${p.pattern}`);
+      t.onclick=()=>study(no);
+      if(no===now) t.insertAdjacentHTML("beforeend",'<span class="pin">🚶</span>');
+      if(no%10===0) t.insertAdjacentHTML("beforeend",'<span class="flagm">🚩</span>');
+      tr.appendChild(t);
+    }
+    b.appendChild(row);
+  }
+
+}
+
+function today(){
+  const fresh=S.today.date===day()&&S.today.nos.length;
+  $("roll").textContent=fresh?"🎲 選び直す":"🎲 今日の3個を選ぶ";
+  const box=$("today"); box.innerHTML="";
+  if(!fresh)return;
+  box.style.display="flex"; box.style.flexDirection="column"; box.style.gap="8px";
+  for(const no of S.today.nos){
+    const p=PKGS[no-1], rc=rec(no);
+    const b=document.createElement("button");
+    b.className="tcard"+(rc.cleared?" done":"");
+    b.innerHTML=`<span class="dot" style="background:var(--l${p.level})"></span>
+      <span class="g"><span class="p en">${esc(p.pattern)}</span>
+      <span class="m">${esc(p.meaning)}</span></span>
+      <span class="st num">${rc.cleared?"✓":rc.reads+"/"+GOAL}</span>`;
+    b.onclick=()=>study(no);
+    box.appendChild(b);
+  }
+}
+$("jump").onclick=()=>{
+  const t=$("board").querySelector(".tile.now");
+  if(t) t.scrollIntoView({behavior:"smooth",block:"center"});
+};
+$("roll").onclick=()=>{
+  const pool=PKGS.filter(p=>!rec(p.no).cleared);
+  if(!pool.length){alert("100個すべてクリア済みです。おつかれさまでした。");return;}
+  const bag=pool.slice(), pick=[];
+  while(pick.length<3&&bag.length) pick.push(bag.splice(Math.random()*bag.length|0,1)[0].no);
+  S.today={date:day(),nos:pick.sort((a,b)=>a-b)}; save(); today();
+};
+
+/* ── dex ── */
+const FILTERS=[["all","すべて"],["done","クリア済み"],["todo","未クリア"],
+               ["1","レベル1"],["2","レベル2"],["3","レベル3"],["4","レベル4"]];
+$("chips").innerHTML=FILTERS.map(([k,l])=>
+  `<button class="chip${k==="all"?" on":""}" data-f="${k}">${l}</button>`).join("");
+$("chips").onclick=e=>{
+  const b=e.target.closest("[data-f]"); if(!b)return;
+  filter=b.dataset.f;
+  document.querySelectorAll("#chips .chip").forEach(c=>c.classList.toggle("on",c===b));
+  dex();
+};
+function dex(){
+  $("d-done").textContent=cleared().length;
+  const g=$("grid"); g.innerHTML="";
+  PKGS.filter(p=>{
+    const c=rec(p.no).cleared;
+    if(filter==="done")return c; if(filter==="todo")return !c;
+    if("1234".includes(filter))return p.level===+filter;
+    return true;
+  }).forEach(p=>{
+    const got=rec(p.no).cleared;
+    const d=document.createElement("button");
+    d.className="dc "+(got?"got":"lock");
+    d.innerHTML=`<span class="bar" style="background:var(--l${p.level})"></span>
+      ${got?'<span class="tick">✓</span>':""}
+      <span class="n num">NO.${pad(p.no)}</span>
+      <span class="p en">${got?esc(p.pattern):"？？？"}</span>
+      <span class="m">${got?esc(p.meaning):"レベル"+p.level+"・未収集"}</span>`;
+    d.onclick=()=>detail(p.no);
+    g.appendChild(d);
+  });
+}
+function detail(no){
+  const p=PKGS[no-1], rc=rec(no);
+  sheet(`<h2 class="en">${rc.cleared?esc(p.pattern):"？？？"}</h2>
+    <p class="muted" style="margin:4px 0 12px">No.${pad(no)}　${rc.cleared?esc(p.meaning):"まだ収集していません"}</p>
+    <div class="kv"><span>レベル</span><span>${p.level}</span></div>
+    <div class="kv"><span>音読した回数</span><span class="num">${rc.reads} 回</span></div>
+    <div class="kv"><span>自分ごと例文</span><span class="en">${rc.my?.en?esc(rc.my.en):"—"}</span></div>
+    ${rc.cleared?p.examples.map(e=>`<div class="kv"><span>${esc(e.ja)}</span><span class="en">${esc(e.en)}</span></div>`).join(""):""}
+    <button class="btn" id="go" style="margin-top:16px">この音のパッケージを学ぶ</button>`);
+  $("go").onclick=()=>{closeSheet();study(no);};
+}
+
+/* ── study ── */
+const STEPS=[["1","聞く"],["2","確かめる"],["3","自分ごと"],["4","声に出す"]];
+function study(no){
+  cur=PKGS[no-1]; if(!cur)return;
+  seen.p1=seen.p2=false;
+  const rc=rec(no);
+  $("s-no").textContent="NO."+pad(no);
+  $("s-lv").textContent="レベル"+cur.level;
+  $("s-pat").textContent=cur.pattern;
+  $("s-mean").textContent=cur.meaning;
+
+  const ex=$("s-ex"); ex.innerHTML="";
+  cur.examples.forEach(e=>{
+    const d=document.createElement("div"); d.className="exrow";
+    d.innerHTML=`<span class="g"><span class="e en">${esc(e.en)}</span>
+                 <span class="j">${esc(e.ja)}</span></span>`;
+    const a=document.createElement("button"); a.className="play"; a.textContent="▶";
+    a.setAttribute("aria-label","通常速度で聞く");
+    a.onclick=()=>{say(e.en,1);seen.p1=true;segs();};
+    const s=document.createElement("button"); s.className="play"; s.textContent="🐢";
+    s.setAttribute("aria-label","ゆっくり聞く");
+    s.onclick=()=>{say(e.en,.7);seen.p1=true;segs();};
+    d.append(a,s); ex.appendChild(d);
+  });
+
+  const th=THEMED[no]||[];
+  $("s-themes").innerHTML=th.map((t,i)=>
+    `<button class="chip" data-c="${i}">${esc(t.theme)}</button>`).join("")
+    ||'<span class="muted">下書きはありません</span>';
+  $("s-cands").innerHTML="";
+  $("s-en").value=rc.my?.en||""; $("s-ja").value=rc.my?.ja||"";
+  drawRing(); segs(); pane(firstOpen()); show("study");
+}
+function firstOpen(){
+  const rc=rec(cur.no);
+  if(!seen.p1)return 1; if(!seen.p2)return 2;
+  if(!(rc.my?.en||"").trim())return 3;
+  return 4;
+}
+function okMap(){
+  const rc=rec(cur.no);
+  return {1:seen.p1,2:seen.p2,3:!!(rc.my?.en||"").trim(),4:rc.reads>=GOAL};
+}
+function segs(){
+  const ok=okMap(), on=$("segs").dataset.on||firstOpen();
+  $("segs").innerHTML=STEPS.map(([n,l])=>
+    `<button class="seg${+n===+on?" on":""}${ok[n]?" ok":""}" data-s="${n}">
+       <b>${ok[n]?"✓":n}</b>${l}</button>`).join("");
+}
+$("segs").onclick=e=>{const b=e.target.closest("[data-s]"); if(b)pane(+b.dataset.s);};
+function pane(n){
+  $("segs").dataset.on=n;
+  document.querySelectorAll(".pane").forEach(p=>p.classList.toggle("on",+p.dataset.p===n));
+  segs();
+}
+$("back").onclick=()=>{show("home");home();};
+$("s-say").onclick=()=>{say(cur.pattern.replace(/~/g,""),1);seen.p1=true;segs();};
+$("s-slow").onclick=()=>{say(cur.pattern.replace(/~/g,""),.7);seen.p1=true;segs();};
+$("s-yg").onclick=()=>{
+  const q=encodeURIComponent(cur.pattern.replace(/~ing/g,"").replace(/~/g,"").trim());
+  open("https://youglish.com/pronounce/"+q+"/english","_blank","noopener");
+  seen.p2=true; segs();
+};
+$("s-themes").onclick=e=>{
+  const b=e.target.closest("[data-c]"); if(!b)return;
+  document.querySelectorAll("#s-themes .chip").forEach(c=>c.classList.toggle("on",c===b));
+  const list=(THEMED[cur.no]||[]).filter((_,i)=>i===+b.dataset.c);
+  const box=$("s-cands"); box.innerHTML="";
+  list.forEach(t=>{
+    const c=document.createElement("button"); c.className="cand";
+    c.innerHTML=`<span class="g"><span class="e en">${esc(t.en)}</span>
+                 <span class="j">${esc(t.ja)}</span></span><span class="use">使う</span>`;
+    c.onclick=()=>{$("s-en").value=t.en;$("s-ja").value=t.ja;say(t.en,1);};
+    box.appendChild(c);
+  });
+};
+$("s-save").onclick=()=>{
+  const rc=rec(cur.no);
+  rc.my={en:$("s-en").value.trim(),ja:$("s-ja").value.trim()};
+  save(); segs();
+  $("s-save").textContent="保存しました";
+  setTimeout(()=>$("s-save").textContent="保存する",1800);
+};
+$("s-myplay").onclick=()=>{
+  const t=$("s-en").value.trim();
+  if(t)say(t,1); else alert("先に自分ごとの例文を入力してください。");
+};
+const target=()=>(rec(cur.no).my?.en||"").trim()||cur.examples[0].en;
+function drawRing(){
+  const rc=rec(cur.no);
+  $("s-cnt").textContent=rc.reads;
+  $("ring").style.strokeDashoffset=RING*(1-Math.min(rc.reads,GOAL)/GOAL);
+  $("s-clear").classList.toggle("hide",!rc.cleared);
+}
+$("s-rep").onclick=()=>{
+  const rc=rec(cur.no);
+  say(target(),1); rc.reads++; S.days[day()]=true;
+  if(rc.reads>=GOAL&&!rc.cleared){rc.cleared=true;rc.at=day();setTimeout(()=>party(cur),800);}
+  save(); drawRing(); segs();
+};
+$("s-reset").onclick=()=>{
+  const rc=rec(cur.no); rc.reads=0; rc.cleared=false; rc.at="";
+  save(); drawRing(); segs();
+};
+function party(p){
+  const n=cleared().length;
+  sheet(`<h2 style="text-align:center">🎉 No.${pad(p.no)} クリア</h2>
+    <p class="muted en" style="text-align:center;margin:6px 0 0">${esc(p.pattern)}</p>
+    <div class="big num" style="margin:14px 0 4px">${n}<s style="font-size:16px;color:var(--muted);text-decoration:none"> / 100</s></div>
+    <p class="muted" style="text-align:center;margin:0">図鑑に登録されました。残り ${100-n} 個です。</p>
+    <button class="btn" id="nx" style="margin-top:18px">すごろくに戻る</button>
+    <button class="btn sub sm" id="st" style="margin:8px auto 0">この画面に残る</button>`);
+  $("nx").onclick=()=>{closeSheet();show("home");home();};
+  $("st").onclick=closeSheet;
+}
+
+/* ── test ── */
+function pool(){
+  const o=[];
+  cleared().forEach(p=>{
+    p.examples.forEach(e=>o.push({en:e.en,ja:e.ja,no:p.no}));
+    const my=(rec(p.no).my?.en||"").trim();
+    if(my)o.push({en:my,ja:rec(p.no).my.ja||"自分ごとの例文",no:p.no});
+  });
+  return o;
+}
+function testHome(){
+  const n=pool().length;
+  $("t-avail").textContent=n?`出題できる例文：${n} 件`:"まずは音のパッケージをクリアしてください";
+  $("t-start").disabled=!n;
+  $("t-box").classList.add("hide"); $("t-end").classList.add("hide");
+  $("t-home").classList.remove("hide");
+}
+$("t-start").onclick=()=>{
+  T={qs:pool().sort(()=>Math.random()-.5).slice(0,10),i:0,sc:0,bad:[]};
+  $("t-home").classList.add("hide"); $("t-end").classList.add("hide");
+  $("t-box").classList.remove("hide");
+  $("t-n").textContent=T.qs.length; nextQ();
+};
+function nextQ(){
+  $("t-i").textContent=T.i+1; $("t-sc").textContent=T.sc;
+  $("tin").value=""; $("t-res").innerHTML=""; $("t-check").disabled=false;
+  say(T.qs[T.i].en,1);
+}
+$("t-play").onclick=()=>T&&say(T.qs[T.i].en,1);
+$("t-slow").onclick=()=>T&&say(T.qs[T.i].en,.7);
+$("tin").addEventListener("keydown",e=>{if(e.key==="Enter")$("t-check").click();});
+$("t-check").onclick=()=>judge(false);
+$("t-skip").onclick=()=>judge(true);
+const norm=s=>s.toLowerCase().replace(/[^a-z0-9'\s]/g," ").replace(/\s+/g," ").trim();
+function judge(skip){
+  if(!T)return;
+  const q=T.qs[T.i], u=skip?"":norm($("tin").value), ok=norm(q.en)===u;
+  if(ok)T.sc++; else T.bad.push(q);
+  $("t-check").disabled=true; $("t-sc").textContent=T.sc;
+  const got=new Set(u.split(" "));
+  const marked=q.en.split(" ").map(w=>
+    `<span class="w${got.has(norm(w))?"":" miss"}">${esc(w)}</span>`).join(" ");
+  $("t-res").innerHTML=`<div class="judge ${ok?"ok":"ng"}">
+      <b>${ok?"✓ 正解です":skip?"正解はこちらです":"✗ おしい"}</b>
+      <div class="a en">${marked}</div>
+      <div class="muted" style="margin-top:4px">${esc(q.ja)}　No.${pad(q.no)}</div>
+    </div>`;
+  const b=document.createElement("button");
+  b.className="btn"; b.style.marginTop="12px";
+  b.textContent=T.i+1<T.qs.length?"次の問題へ":"結果を見る";
+  b.onclick=()=>{T.i++; T.i<T.qs.length?nextQ():endTest();};
+  $("t-res").appendChild(b);
+}
+function endTest(){
+  $("t-box").classList.add("hide"); $("t-end").classList.remove("hide");
+  const pct=Math.round(T.sc/T.qs.length*100);
+  $("t-title").textContent=pct===100?"🏆 全問正解":pct>=70?"👏 よくできました":"📖 もう一度練習しましょう";
+  $("t-body").innerHTML=
+    `<div class="big num" style="margin:12px 0">${T.sc}<s style="font-size:16px;color:var(--muted);text-decoration:none"> / ${T.qs.length}</s></div>`+
+    (T.bad.length?`<div class="eyebrow" style="margin-top:8px">聞き取れなかった例文</div>`+
+      T.bad.map(w=>`<div class="kv"><span>${esc(w.ja)}</span><span class="en">${esc(w.en)}</span></div>`).join("")
+      :`<p class="muted" style="text-align:center">すべて聞き取れました。</p>`);
+  S.days[day()]=true; save();
+}
+$("t-again").onclick=()=>$("t-start").click();
+
+/* ── settings + データ移行 ── */
+$("gear").onclick=()=>{
+  const vs=VOICES.map(v=>`<option value="${esc(v.name)}"${v.name===S.voice?" selected":""}>${esc(v.name)} (${v.lang})</option>`).join("");
+  sheet(`<h2>設定</h2>
+    <label class="lbl" for="vsel">読み上げの声</label>
+    <select id="vsel" style="width:100%;background:var(--sunk);border:1px solid var(--line);
+      border-radius:12px;padding:12px;font-size:16px">${vs}</select>
+    <button class="btn sub sm" id="vtry" style="margin:10px 0 4px">▶ 試聴する</button>
+    <p class="muted" style="margin:8px 0 4px">音が出ないときは、iPhone左側面の<b>着信スイッチ</b>が
+    消音になっていないかご確認ください。消音のままだと読み上げが鳴らないことがあります。</p>
+    <div class="kv"><span>クリア済み</span><span class="num">${cleared().length} / 100</span></div>
+    <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
+    <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
+    <label class="lbl">パソコン版との進捗のやりとり</label>
+    <p class="muted" style="margin:0 0 8px">進捗コードを書き出して、もう一方の端末に貼り付けると引き継げます。</p>
+    <textarea id="code" rows="3" placeholder="ここに進捗コードを貼り付けて「読み込む」"></textarea>
+    <div class="btnrow" style="margin-top:8px">
+      <button class="btn sm" id="exp" style="flex:1">書き出す</button>
+      <button class="btn sub sm" id="imp" style="flex:1">読み込む</button>
+    </div>
+    <div class="muted" id="msg" style="margin-top:8px"></div>
+    <button class="btn sub sm" id="wipe" style="margin:18px auto 0">進捗をすべて消す</button>`);
+  $("vsel").onchange=e=>{S.voice=e.target.value;save();};
+  $("vtry").onclick=()=>say("I'm gonna grab some coffee.",1);
+  $("exp").onclick=()=>{
+    const slim={};                        // 中身のある記録だけ書き出す
+    for(const[k,r]of Object.entries(S.pkgs))
+      if(r.reads||r.cleared||(r.my?.en||"").trim()||(r.my?.ja||"").trim()) slim[k]=r;
+    const c=btoa(unescape(encodeURIComponent(JSON.stringify(
+      {pkgs:slim,days:S.days}))));
+    $("code").value=c; $("code").select();
+    $("msg").textContent="コードを書き出しました。長押しでコピーしてください。";
+  };
+  $("imp").onclick=()=>{
+    try{
+      const d=JSON.parse(decodeURIComponent(escape(atob($("code").value.trim()))));
+      if(!d||typeof d.pkgs!=="object")throw 0;
+      S.pkgs=Object.assign(S.pkgs,d.pkgs); S.days=Object.assign(S.days,d.days||{});
+      save(); home(); dex();
+      $("msg").textContent=`読み込みました。クリア済み ${cleared().length} 件です。`;
+    }catch{ $("msg").textContent="コードを読み取れませんでした。全文が貼れているかご確認ください。"; }
+  };
+  $("wipe").onclick=()=>{
+    if(confirm("すべての進捗を削除します。よろしいですか？")){
+      localStorage.removeItem(KEY); load(); closeSheet(); show("home"); home();
+    }
+  };
+};
+
+/* ── sheet ── */
+function sheet(html){$("sheet-in").innerHTML=html;$("sheet").classList.remove("hide");}
+function closeSheet(){$("sheet").classList.add("hide");}
+$("sheet").onclick=e=>{if(e.target.id==="sheet")closeSheet();};
+addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();});
+
+/* ── start ── */
+load(); show("home"); home(); testHome(); dex();
+setTimeout(loadVoices,500);
+</script>
+
+</body>
+</html>
