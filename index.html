@@ -75,6 +75,11 @@ button{cursor:pointer;border:0;background:none}
          color:var(--faint);font-weight:700}
 .muted{color:var(--muted);font-size:13px}
 .hide{display:none!important}
+.warn{background:var(--now-bg);border:1px solid var(--now);border-radius:14px;
+      padding:13px 15px;display:flex;align-items:center;gap:11px;text-align:left;width:100%}
+.warn b{color:var(--now);font-size:13.5px;font-weight:800;display:block}
+.warn span{color:var(--muted);font-size:12px;display:block;margin-top:1px}
+.warn i{font-style:normal;font-size:19px;flex:none}
 .card{background:var(--surface);border:1px solid var(--line);
       border-radius:16px;padding:16px;box-shadow:var(--shadow)}
 
@@ -278,6 +283,8 @@ textarea,input[type=text]{width:100%;background:var(--sunk);border:1px solid var
     </div>
   </section>
 
+  <button class="warn hide" id="warn"></button>
+
   <button class="btn" id="roll">🎲 今日の3個を選ぶ</button>
   <div id="today"></div>
 
@@ -423,7 +430,7 @@ const pad=n=>String(n).padStart(3,"0");
 
 /* ── store ── */
 function load(){
-  const base={v:1,pkgs:{},days:{},today:{date:"",nos:[]},voice:"Samantha",tip:0};
+  const base={v:1,pkgs:{},days:{},today:{date:"",nos:[]},voice:"Samantha",lastBackup:""};
   try{S=Object.assign(base,JSON.parse(localStorage.getItem(KEY))||{});}catch{S=base;}
 }
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch{}};
@@ -475,7 +482,7 @@ function home(){
   $("k-done").textContent=n; $("k-rail").style.width=n+"%";
   $("k-streak").textContent=streak(); $("k-reads").textContent=reads();
   $("k-my").textContent=mine();
-  board(); today();
+  board(); today(); renderWarn();
 }
 const nowNo=()=>(PKGS.find(p=>!rec(p.no).cleared)||{no:100}).no;
 
@@ -772,6 +779,14 @@ $("gear").onclick=()=>{
     <div class="kv"><span>クリア済み</span><span class="num">${cleared().length} / 100</span></div>
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
+    <label class="lbl">バックアップ（消失に備える）</label>
+    <p class="muted" id="bkstat" style="margin:0 0 8px"></p>
+    <div class="btnrow">
+      <button class="btn sm" id="bksave" style="flex:1">ファイルに保存</button>
+      <button class="btn sub sm" id="bkload" style="flex:1">ファイルから復元</button>
+    </div>
+    <input type="file" id="bkfile" accept=".json,application/json" style="display:none">
+    <div class="muted" id="bkmsg" style="margin-top:8px"></div>
     <label class="lbl">パソコン版との進捗のやりとり</label>
     <p class="muted" style="margin:0 0 8px">進捗コードを書き出して、もう一方の端末に貼り付けると引き継げます。</p>
     <textarea id="code" rows="3" placeholder="ここに進捗コードを貼り付けて「読み込む」"></textarea>
@@ -782,6 +797,24 @@ $("gear").onclick=()=>{
     <div class="muted" id="msg" style="margin-top:8px"></div>
     <button class="btn sub sm" id="wipe" style="margin:18px auto 0">進捗をすべて消す</button>`);
   $("vsel").onchange=e=>{S.voice=e.target.value;save();};
+  const n=daysSince(S.lastBackup);
+  $("bkstat").textContent = !hasProgress() ? "まだ保存する進捗がありません。"
+    : n===null ? "まだ一度も保存していません。"
+    : n===0 ? "今日保存済みです。" : `最後に保存したのは ${n} 日前です。`;
+  $("bksave").onclick=()=>{
+    if(!hasProgress()){ $("bkmsg").textContent="保存する進捗がまだありません。"; return; }
+    saveBackupFile();
+    $("bkmsg").textContent="保存しました。「ファイル」アプリに入っています。";
+    $("bkstat").textContent="今日保存済みです。";
+  };
+  $("bkload").onclick=()=>$("bkfile").click();
+  $("bkfile").onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    loadBackupFile(f,(err,cnt)=>{
+      $("bkmsg").textContent = err || `復元しました。${cnt} 件の記録を読み込みました。`;
+    });
+    e.target.value="";
+  };
   $("vtry").onclick=()=>say("I'm gonna grab some coffee.",1);
   $("exp").onclick=()=>{
     const slim={};                        // 中身のある記録だけ書き出す
@@ -807,6 +840,55 @@ $("gear").onclick=()=>{
     }
   };
 };
+
+/* ── バックアップ ── */
+function slimPkgs(){
+  const o={};
+  for(const[k,r]of Object.entries(S.pkgs))
+    if(r.reads||r.cleared||(r.my?.en||"").trim()||(r.my?.ja||"").trim()) o[k]=r;
+  return o;
+}
+function daysSince(d){
+  if(!d) return null;
+  return Math.floor((new Date(day())-new Date(d))/86400000);
+}
+function hasProgress(){ return Object.keys(slimPkgs()).length>0; }
+
+function saveBackupFile(){
+  const body=JSON.stringify({app:"otopack",v:1,savedAt:new Date().toISOString(),
+                             pkgs:slimPkgs(),days:S.days},null,1);
+  const url=URL.createObjectURL(new Blob([body],{type:"application/json"}));
+  const a=document.createElement("a");
+  a.href=url; a.download=`音のパッケージ100_バックアップ_${day()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  S.lastBackup=day(); save(); renderWarn();
+}
+function loadBackupFile(file,done){
+  const fr=new FileReader();
+  fr.onload=()=>{
+    try{
+      const d=JSON.parse(fr.result);
+      if(!d||typeof d.pkgs!=="object") throw 0;
+      S.pkgs=Object.assign(S.pkgs,d.pkgs);
+      S.days=Object.assign(S.days,d.days||{});
+      save(); home(); dex();
+      done(null,Object.keys(d.pkgs).length);
+    }catch{ done("このファイルは読み取れませんでした。バックアップファイルを選び直してください。"); }
+  };
+  fr.onerror=()=>done("ファイルを開けませんでした。");
+  fr.readAsText(file);
+}
+function renderWarn(){
+  const w=$("warn"), n=daysSince(S.lastBackup);
+  const need=hasProgress()&&(n===null||n>=7);
+  w.classList.toggle("hide",!need);
+  if(!need) return;
+  w.innerHTML=`<i>🛟</i><span style="flex:1">
+    <b>${n===null?"進捗をまだ保存していません":`最後の保存から ${n} 日たちました`}</b>
+    <span>ブラウザのデータが消えると進捗も消えます。ファイルに保存しておくと安心です。</span></span>`;
+  w.onclick=()=>{ $("gear").click(); };
+}
 
 /* ── sheet ── */
 function sheet(html){$("sheet-in").innerHTML=html;$("sheet").classList.remove("hide");}
