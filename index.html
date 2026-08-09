@@ -75,6 +75,10 @@ button{cursor:pointer;border:0;background:none}
          color:var(--faint);font-weight:700}
 .muted{color:var(--muted);font-size:13px}
 .hide{display:none!important}
+.upd{position:fixed;left:12px;right:12px;bottom:calc(74px + env(safe-area-inset-bottom));
+     z-index:70;background:var(--accent);color:var(--accent-ink);border-radius:14px;
+     padding:13px 16px;font-size:13.5px;font-weight:800;box-shadow:var(--shadow);
+     display:flex;align-items:center;gap:10px;max-width:536px;margin:0 auto}
 .warn{background:var(--now-bg);border:1px solid var(--now);border-radius:14px;
       padding:13px 15px;display:flex;align-items:center;gap:11px;text-align:left;width:100%}
 .warn b{color:var(--now);font-size:13.5px;font-weight:800;display:block}
@@ -411,6 +415,10 @@ textarea,input[type=text]{width:100%;background:var(--sunk);border:1px solid var
   </section>
 </div></main>
 
+<button class="upd hide" id="upd">
+  <span style="flex:1;text-align:left">新しい版があります</span>
+  <span style="opacity:.8">タップで更新</span>
+</button>
 <nav class="nav" id="nav"></nav>
 <div class="sheet hide" id="sheet"><div class="in" id="sheet-in"></div></div>
 
@@ -779,6 +787,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>クリア済み</span><span class="num">${cleared().length} / 100</span></div>
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
+    <div class="kv"><span>この版</span><span class="num">20260810-0026</span></div>
     <label class="lbl">バックアップ（消失に備える）</label>
     <p class="muted" id="bkstat" style="margin:0 0 8px"></p>
     <div class="btnrow">
@@ -895,6 +904,38 @@ function sheet(html){$("sheet-in").innerHTML=html;$("sheet").classList.remove("h
 function closeSheet(){$("sheet").classList.add("hide");}
 $("sheet").onclick=e=>{if(e.target.id==="sheet")closeSheet();};
 addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();});
+
+/* ── オフライン対応と更新検知 ── */
+if("serviceWorker" in navigator){
+  addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").then(reg=>{
+      // 新しい版が待機状態になったら知らせる
+      const notify=w=>{
+        if(!w) return;
+        w.addEventListener("statechange",()=>{
+          if(w.state==="installed"&&navigator.serviceWorker.controller) showUpdate(reg);
+        });
+      };
+      if(reg.waiting&&navigator.serviceWorker.controller) showUpdate(reg);
+      notify(reg.installing);
+      reg.addEventListener("updatefound",()=>notify(reg.installing));
+      reg.update().catch(()=>{});
+    }).catch(()=>{});
+  });
+  let reloading=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{
+    if(reloading) return; reloading=true; location.reload();
+  });
+}
+function showUpdate(reg){
+  const b=$("upd"); if(!b) return;
+  b.classList.remove("hide");
+  b.onclick=()=>{
+    b.textContent="更新しています…";
+    if(reg.waiting) reg.waiting.postMessage("skipWaiting");
+    else location.reload();
+  };
+}
 
 /* ── start ── */
 load(); show("home"); home(); testHome(); dex();
