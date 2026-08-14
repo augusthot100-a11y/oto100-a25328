@@ -741,7 +741,18 @@ $("t-slow").onclick=()=>T&&say(T.qs[T.i].en,.7);
 $("tin").addEventListener("keydown",e=>{if(e.key==="Enter")$("t-check").click();});
 $("t-check").onclick=()=>judge(false);
 $("t-skip").onclick=()=>judge(true);
-const norm=s=>s.toLowerCase().replace(/[^a-z0-9'\s]/g," ").replace(/\s+/g," ").trim();
+/* 表記ゆれの吸収。音声入力では ' が ’ や ` になることがあるため、
+   アポストロフィの種類の違いも、有無の違いも正解として扱う。 */
+const APOS=/[\u2018\u2019\u201B\u02BC\u02B9\u2032\u2035\u0060\u00B4\uFF07]/g;
+const norm=s=>String(s??"")
+  .replace(APOS,"'")                 // NFKC が ´ を分解する前に統一しておく
+  .normalize("NFKC")                 // 全角英数などを半角にそろえる
+  .replace(APOS,"'")                 // 全角由来のものを再度統一
+  .replace(/[\u0300-\u036F]/g,"")    // 結合アクセント記号を除去
+  .toLowerCase()
+  .replace(/'/g,"")                  // アポストロフィの有無は問わない
+  .replace(/[^a-z0-9\s]/g," ")       // 記号は区切りとして扱う
+  .replace(/\s+/g," ").trim();
 function judge(skip){
   if(!T)return;
   const q=T.qs[T.i], u=skip?"":norm($("tin").value), ok=norm(q.en)===u;
@@ -787,7 +798,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>クリア済み</span><span class="num">${cleared().length} / 100</span></div>
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
-    <div class="kv"><span>この版</span><span class="num">20260810-0029</span></div>
+    <div class="kv"><span>この版</span><span class="num">20260814-0958</span></div>
     <label class="lbl">バックアップ（消失に備える）</label>
     <p class="muted" id="bkstat" style="margin:0 0 8px"></p>
     <div class="btnrow">
