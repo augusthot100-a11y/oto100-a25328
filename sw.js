@@ -1,5 +1,5 @@
 /* 音のパッケージ100 — オフライン対応 */
-const CACHE = "otopack-20260816-1305";
+const CACHE = "otopack-20260816-1308";
 const SHELL = ["./", "./index.html"];
 
 // 1件でも失敗すると全部入らない addAll は使わず、1件ずつ入れて取りこぼしを防ぐ

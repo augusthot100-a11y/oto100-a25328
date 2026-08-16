@@ -745,6 +745,9 @@ function renderRange(){
     return `<button class="chip${k===range?" on":""}" data-r="${k}"${n?"":" disabled"}>`+
            `${l}<small>${n}</small></button>`;
   }).join("");
+  // 選んでいる範囲が横スクロールで隠れないように寄せる
+  const on=$("t-range").querySelector(".chip.on");
+  if(on) on.scrollIntoView({block:"nearest",inline:"nearest"});
 }
 $("t-range").onclick=e=>{
   const b=e.target.closest("[data-r]");
@@ -845,7 +848,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>クリア済み</span><span class="num">${cleared().length} / 100</span></div>
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
-    <div class="kv"><span>この版</span><span class="num">20260816-1305</span></div>
+    <div class="kv"><span>この版</span><span class="num">20260816-1308</span></div>
     <label class="lbl">バックアップ（消失に備える）</label>
     <p class="muted" id="bkstat" style="margin:0 0 8px"></p>
     <div class="btnrow">
