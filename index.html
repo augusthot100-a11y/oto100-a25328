@@ -84,6 +84,42 @@ button{cursor:pointer;border:0;background:none}
 .warn b{color:var(--now);font-size:13.5px;font-weight:800;display:block}
 .warn span{color:var(--muted);font-size:12px;display:block;margin-top:1px}
 .warn i{font-style:normal;font-size:19px;flex:none}
+
+/* ══ カレンダー ═════════════════════════════════════ */
+.calhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.calhead b{font-size:16px;font-weight:800;letter-spacing:.01em}
+.caldow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:5px}
+.caldow span{text-align:center;font-size:10.5px;font-weight:800;color:var(--faint);padding:3px 0}
+.caldow span.sun{color:var(--l4)} .caldow span.sat{color:var(--l1)}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cday{position:relative;aspect-ratio:1;display:grid;place-items:center;
+      font-size:13.5px;font-weight:700;color:var(--muted);background:none;border:0}
+.cday.pad{visibility:hidden}
+.cday.future{opacity:.35}
+.cday .n{position:relative;z-index:1}
+.cday .ring{position:absolute;inset:8%;border-radius:50%;border:2.5px solid var(--accent);
+            transform:rotate(-9deg)}
+.cday .ring2{position:absolute;inset:23%;border-radius:50%;border:2px solid var(--accent);
+             transform:rotate(7deg)}
+.cday.hit{color:var(--ink)}
+.cday.clear{color:var(--accent)}
+.cday.todo{color:var(--now)}
+.cday.todo .ring{border-style:dashed;border-color:var(--now);opacity:.85}
+.cday .dot{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+           width:4px;height:4px;border-radius:50%;background:var(--l1);z-index:1}
+.callegend{display:flex;flex-wrap:wrap;gap:13px;margin-top:14px;font-size:11.5px;color:var(--muted)}
+.callegend i{display:inline-block;width:15px;height:15px;border-radius:50%;
+             border:2.5px solid var(--accent);margin-right:5px;vertical-align:-3px}
+.callegend i.dbl{box-shadow:inset 0 0 0 1.5px var(--surface),inset 0 0 0 3.5px var(--accent)}
+.callegend i.todo{border-style:dashed;border-color:var(--now)}
+.callegend i.test{border:0;width:6px;height:6px;background:var(--l1);vertical-align:1px;
+                  margin:0 9px 0 4px}
+.calnote{border-radius:13px;padding:13px 15px;margin-top:13px;font-size:13px;font-weight:700;
+         display:flex;align-items:center;gap:10px;text-align:left}
+.calnote.done{background:var(--sunk);color:var(--accent)}
+.calnote.yet{background:var(--now-bg);color:var(--now);border:1px solid var(--now)}
+.calnote i{font-style:normal;font-size:19px;flex:none}
+.calnote small{display:block;font-weight:400;color:var(--muted);font-size:11.5px;margin-top:1px}
 .card{background:var(--surface);border:1px solid var(--line);
       border-radius:16px;padding:16px;box-shadow:var(--shadow)}
 
@@ -430,6 +466,36 @@ textarea,input[type=text]{width:100%;background:var(--sunk);border:1px solid var
   <span style="flex:1;text-align:left">新しい版があります</span>
   <span style="opacity:.8">タップで更新</span>
 </button>
+<!-- ═══ 記録（カレンダー） ═══ -->
+<main id="v-cal" class="view"><div class="wrap">
+  <section class="card">
+    <div class="eyebrow">学習の記録</div>
+    <div class="facts" style="margin-top:10px">
+      <div class="fact"><b class="num" id="c-streak">0</b><span>日連続</span></div>
+      <div class="fact"><b class="num" id="c-best">0</b><span>最長記録</span></div>
+      <div class="fact"><b class="num" id="c-mon">0</b><span>今月</span></div>
+      <div class="fact"><b class="num" id="c-all">0</b><span>のべ日数</span></div>
+    </div>
+    <div id="c-note"></div>
+  </section>
+
+  <section class="card">
+    <div class="calhead">
+      <button class="iconbtn" id="c-prev" aria-label="前の月">‹</button>
+      <b id="c-label">—</b>
+      <button class="iconbtn" id="c-next" aria-label="次の月">›</button>
+    </div>
+    <div class="caldow" id="c-dow"></div>
+    <div class="calgrid" id="c-grid"></div>
+    <div class="callegend">
+      <span><i></i>学習した日</span>
+      <span><i class="dbl"></i>クリアした日</span>
+      <span><i class="todo"></i>今日（まだ）</span>
+      <span><i class="test"></i>テストをした日</span>
+    </div>
+  </section>
+</div></main>
+
 <nav class="nav" id="nav"></nav>
 <div class="sheet hide" id="sheet"><div class="in" id="sheet-in"></div></div>
 
@@ -460,11 +526,36 @@ function rec(no){
 const cleared=()=>PKGS.filter(p=>rec(p.no).cleared);
 const reads=()=>Object.values(S.pkgs).reduce((a,r)=>a+(r.reads||0),0);
 const mine=()=>Object.values(S.pkgs).filter(r=>(r.my?.en||"").trim()).length;
+/* 1日の記録は {r:音読, c:クリア, t:テスト} で持つ。
+   旧版は true で保存していたため、読むときに変換する。 */
+function dayRec(d){
+  const v=S.days[d];
+  if(!v)return null;
+  if(v===true)return {r:1,c:0,t:0};
+  return {r:v.r||0,c:v.c||0,t:v.t||0};
+}
+function mark(kind){
+  const d=day(), v=dayRec(d)||{r:0,c:0,t:0};
+  v[kind]=(v[kind]||0)+1;
+  S.days[d]=v;
+}
+const iso=d=>d.toLocaleDateString("sv-SE");
 function streak(){
   let n=0; const d=new Date();
   if(!S.days[day()]) d.setDate(d.getDate()-1);
-  while(S.days[d.toLocaleDateString("sv-SE")]){n++;d.setDate(d.getDate()-1);}
+  while(S.days[iso(d)]){n++;d.setDate(d.getDate()-1);}
   return n;
+}
+function bestStreak(){
+  const ds=Object.keys(S.days).filter(k=>S.days[k]).sort();
+  let best=0,run=0,prev=null;
+  for(const k of ds){
+    const cur=new Date(k+"T00:00:00");
+    run = (prev && (cur-prev)/86400000===1) ? run+1 : 1;
+    if(run>best)best=run;
+    prev=cur;
+  }
+  return best;
 }
 
 /* ── speech ── */
@@ -481,7 +572,8 @@ function say(text,rate=1){
 }
 
 /* ── nav ── */
-const TABS=[["home","🎲","すごろく"],["dex","📗","図鑑"],["test","🎧","テスト"]];
+const TABS=[["home","🎲","すごろく"],["dex","📗","図鑑"],
+            ["test","🎧","テスト"],["cal","📅","記録"]];
 $("nav").innerHTML=TABS.map(([k,i,l])=>
   `<button data-go="${k}"><i>${i}</i>${l}</button>`).join("");
 function show(v){
@@ -492,7 +584,8 @@ function show(v){
 $("nav").onclick=e=>{
   const b=e.target.closest("[data-go]"); if(!b)return;
   const v=b.dataset.go; show(v);
-  if(v==="home")home(); if(v==="dex")dex(); if(v==="test")testHome();
+  if(v==="home")home(); if(v==="dex")dex();
+  if(v==="test")testHome(); if(v==="cal")renderCal();
 };
 
 /* ── home ── */
@@ -699,8 +792,8 @@ function drawRing(){
 }
 $("s-rep").onclick=()=>{
   const rc=rec(cur.no);
-  say(target(),1); rc.reads++; S.days[day()]=true;
-  if(rc.reads>=GOAL&&!rc.cleared){rc.cleared=true;rc.at=day();setTimeout(()=>party(cur),800);}
+  say(target(),1); rc.reads++; mark("r");
+  if(rc.reads>=GOAL&&!rc.cleared){rc.cleared=true;rc.at=day();mark("c");setTimeout(()=>party(cur),800);}
   save(); drawRing(); segs();
 };
 $("s-reset").onclick=()=>{
@@ -831,7 +924,7 @@ function endTest(){
       T.bad.map(w=>`<div class="kv"><span>No.${pad(w.no)} ${esc(PKGS[w.no-1].pattern)}</span>`+
         `<span class="en">${esc(w.en)}</span></div>`).join("")
       :`<p class="muted" style="text-align:center">すべて聞き取れました。</p>`);
-  S.days[day()]=true; save();
+  mark("t"); save();
 }
 $("t-again").onclick=()=>$("t-start").click();
 
@@ -848,7 +941,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>クリア済み</span><span class="num">${cleared().length} / 100</span></div>
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
-    <div class="kv"><span>この版</span><span class="num">20260816-1308</span></div>
+    <div class="kv"><span>この版</span><span class="num">20260816-1323</span></div>
     <label class="lbl">バックアップ（消失に備える）</label>
     <p class="muted" id="bkstat" style="margin:0 0 8px"></p>
     <div class="btnrow">
@@ -966,6 +1059,63 @@ function closeSheet(){$("sheet").classList.add("hide");}
 $("sheet").onclick=e=>{if(e.target.id==="sheet")closeSheet();};
 addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();});
 
+/* ── 記録（カレンダー） ── */
+const DOW=["日","月","火","水","木","金","土"];
+let calRef=new Date();
+$("c-prev").onclick=()=>{calRef.setMonth(calRef.getMonth()-1);renderCal();};
+$("c-next").onclick=()=>{calRef.setMonth(calRef.getMonth()+1);renderCal();};
+
+function renderCal(){
+  const y=calRef.getFullYear(), m=calRef.getMonth();
+  $("c-label").textContent=`${y}年${m+1}月`;
+  $("c-dow").innerHTML=DOW.map((d,i)=>
+    `<span class="${i===0?"sun":i===6?"sat":""}">${d}</span>`).join("");
+
+  const first=new Date(y,m,1), lastDay=new Date(y,m+1,0).getDate(), td=day();
+  let html="", monCount=0;
+  for(let i=0;i<first.getDay();i++) html+='<div class="cday pad"></div>';
+  for(let d=1;d<=lastDay;d++){
+    const k=iso(new Date(y,m,d)), r=dayRec(k);
+    const isToday=k===td, isFuture=k>td;
+    if(r)monCount++;
+    const cls=["cday"];
+    if(isFuture)cls.push("future");
+    if(r)cls.push(r.c>0?"clear":"hit"); else if(isToday)cls.push("todo");
+    let inner=`<span class="n">${d}</span>`;
+    if(r||isToday)inner+='<span class="ring"></span>';
+    if(r&&r.c>0)inner+='<span class="ring2"></span>';
+    if(r&&r.t>0)inner+='<span class="dot"></span>';
+    html+=`<button class="${cls.join(" ")}" data-d="${k}">${inner}</button>`;
+  }
+  $("c-grid").innerHTML=html;
+
+  $("c-streak").textContent=streak();
+  $("c-best").textContent=bestStreak();
+  $("c-mon").textContent=monCount;
+  $("c-all").textContent=Object.keys(S.days).filter(k=>S.days[k]).length;
+
+  const t=dayRec(td);
+  $("c-note").innerHTML = t
+    ? `<div class="calnote done"><i>⭕️</i><span>今日はもう学習しました
+         <small>音読 ${t.r} 回${t.c?` ・ クリア ${t.c} 個`:""}${t.t?` ・ テスト ${t.t} 回`:""}</small>
+       </span></div>`
+    : `<div class="calnote yet"><i>⚪️</i><span>今日はまだ丸がついていません
+         <small>音のパッケージを1回音読するか、テストを1回終えると丸がつきます</small>
+       </span></div>`;
+}
+$("c-grid").onclick=e=>{
+  const b=e.target.closest("[data-d]"); if(!b)return;
+  const k=b.dataset.d, r=dayRec(k);
+  if(!r)return;
+  const [yy,mm,dd]=k.split("-");
+  sheet(`<h2>${+mm}月${+dd}日 の記録</h2>
+    <div class="kv"><span>音読した回数</span><span class="num">${r.r} 回</span></div>
+    <div class="kv"><span>クリアした数</span><span class="num">${r.c} 個</span></div>
+    <div class="kv"><span>テストを終えた回数</span><span class="num">${r.t} 回</span></div>
+    <button class="btn" id="cx" style="margin-top:16px">閉じる</button>`);
+  $("cx").onclick=closeSheet;
+};
+
 /* ── オフライン対応と更新検知 ── */
 if("serviceWorker" in navigator){
   addEventListener("load",()=>{
@@ -999,7 +1149,7 @@ function showUpdate(reg){
 }
 
 /* ── start ── */
-load(); show("home"); home(); testHome(); dex();
+load(); show("home"); home(); testHome(); dex(); renderCal();
 setTimeout(loadVoices,500);
 </script>
 
