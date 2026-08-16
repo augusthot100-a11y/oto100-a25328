@@ -85,6 +85,45 @@ button{cursor:pointer;border:0;background:none}
 .warn span{color:var(--muted);font-size:12px;display:block;margin-top:1px}
 .warn i{font-style:normal;font-size:19px;flex:none}
 
+
+/* ══ テストの種類 / クイックレスポンス ═══════════════ */
+.modes{display:flex;gap:8px;margin-bottom:14px}
+.mode{flex:1;border:1px solid var(--line);background:var(--surface);border-radius:14px;
+      padding:12px 10px;text-align:center;line-height:1.35}
+.mode i{font-style:normal;font-size:21px;display:block;margin-bottom:3px}
+.mode b{font-size:13px;font-weight:800;display:block}
+.mode small{font-size:10.5px;color:var(--muted);display:block;margin-top:1px}
+.mode.on{border-color:var(--accent);background:var(--sunk)}
+.mode.on b{color:var(--accent)}
+.opts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
+.opt{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);
+     background:var(--sunk);border:1px solid var(--line);border-radius:99px;padding:7px 13px}
+.opt select{background:none;border:0;font-size:13px;font-weight:800;color:var(--ink);padding:0}
+.sw{position:relative;width:40px;height:23px;border-radius:99px;background:var(--line);
+    border:0;flex:none;transition:background .18s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;
+           border-radius:50%;background:var(--surface);transition:transform .18s}
+.sw.on{background:var(--accent)}
+.sw.on::after{transform:translateX(17px)}
+.qja{font-size:23px;font-weight:700;line-height:1.5;text-align:center;margin:6px 0 2px}
+.qhint{text-align:center;font-size:12px;color:var(--faint)}
+.qen{font-size:22px;font-weight:700;line-height:1.45;text-align:center;margin:4px 0 2px}
+.qcount{position:relative;width:120px;height:120px;margin:14px auto 6px}
+.qcount svg{transform:rotate(-90deg);width:120px;height:120px}
+.qcount circle{fill:none;stroke-width:8;stroke-linecap:round}
+.qbg{stroke:var(--sunk)}
+.qfg{stroke:var(--now);stroke-dasharray:326;transition:stroke-dashoffset .1s linear}
+.qnum{position:absolute;inset:0;display:grid;place-items:center;
+      font-size:40px;font-weight:800;color:var(--now)}
+.qnum.go{font-size:20px;color:var(--accent)}
+.selfrow{display:flex;gap:7px;margin-top:14px}
+.selfrow button{flex:1;min-height:56px;border-radius:13px;border:1px solid var(--line);
+   background:var(--surface);font-size:12.5px;font-weight:800;line-height:1.3;
+   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.selfrow button i{font-style:normal;font-size:19px}
+.selfrow button.g{border-color:var(--accent);color:var(--accent)}
+.selfrow button.y{border-color:var(--now);color:var(--now)}
+.selfrow button.r{border-color:var(--l4);color:var(--l4)}
 /* ══ カレンダー ═════════════════════════════════════ */
 .calhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .calhead b{font-size:16px;font-weight:800;letter-spacing:.01em}
@@ -433,13 +472,69 @@ textarea,input[type=text]{width:100%;background:var(--sunk);border:1px solid var
 <!-- ═══ テスト ═══ -->
 <main id="v-test" class="view"><div class="wrap">
   <section class="card" id="t-home">
-    <div class="eyebrow">リスニングテスト</div>
-    <h2 style="margin:2px 0 6px">聞こえた英文を入力します</h2>
-    <p class="muted" style="margin:0 0 12px">クリア済みの例文と、自分で作った例文から出題されます。大文字・句読点・アポストロフィの違いは正解として扱います。</p>
+    <div class="eyebrow" style="margin-bottom:8px">テストの種類</div>
+    <div class="modes" id="t-modes">
+      <button class="mode on" data-m="quick"><i>⚡</i><b>クイックレスポンス</b>
+        <small>日本語を見て即答する</small></button>
+      <button class="mode" data-m="listen"><i>🎧</i><b>リスニング</b>
+        <small>聞こえた英文を書く</small></button>
+    </div>
+    <p class="muted" id="t-desc" style="margin:0 0 12px"></p>
+
+    <div id="q-opts" class="opts" style="margin-bottom:13px">
+      <span class="opt">制限時間
+        <select id="q-sec">
+          <option value="2">2秒</option><option value="3">3秒</option>
+          <option value="5">5秒</option><option value="0">なし</option>
+        </select>
+      </span>
+      <span class="opt">お手本を音で流す
+        <button class="sw on" id="q-snd" role="switch" aria-label="お手本を音で流す"></button>
+      </span>
+    </div>
+
     <div class="eyebrow" style="margin-bottom:7px">出題する範囲</div>
     <div class="chips" id="t-range"></div>
     <button class="btn" id="t-start" style="margin-top:13px">はじめる</button>
     <div class="muted" id="t-avail" style="text-align:center;margin-top:8px"></div>
+  </section>
+
+  <!-- クイックレスポンス -->
+  <section class="card hide" id="q-box">
+    <div class="tprog">第 <b class="num" id="q-i">1</b> 問 / <span class="num" id="q-n">10</span>
+      　　言えた <b class="num" id="q-sc">0</b></div>
+
+    <div id="q-ask">
+      <div class="qja" id="q-ja">—</div>
+      <div class="qhint">この日本語を、声に出して英語で言ってください</div>
+      <div class="qcount">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="qbg" cx="60" cy="60" r="52"></circle>
+          <circle class="qfg" id="q-ring" cx="60" cy="60" r="52"></circle>
+        </svg>
+        <div class="qnum" id="q-num">3</div>
+      </div>
+      <button class="btn" id="q-reveal">答えを見る</button>
+    </div>
+
+    <div id="q-ans" class="hide">
+      <div class="qja" id="q-ja2" style="font-size:15px;color:var(--muted);font-weight:400">—</div>
+      <div class="qen en" id="q-en">—</div>
+      <div class="qsrc" id="q-src"></div>
+      <button class="btn sub sm" id="q-replay" style="margin:12px auto 0">🔊 もう一度聞く</button>
+      <div class="eyebrow" style="margin-top:16px;text-align:center">言えましたか？</div>
+      <div class="selfrow">
+        <button class="g" data-s="2"><i>◎</i>言えた</button>
+        <button class="y" data-s="1"><i>△</i>惜しい</button>
+        <button class="r" data-s="0"><i>✗</i>言えなかった</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card hide" id="q-end">
+    <h2 id="q-title" style="text-align:center">結果</h2>
+    <div id="q-body"></div>
+    <button class="btn" id="q-again" style="margin-top:14px">もう一度</button>
   </section>
 
   <section class="card hide" id="t-box">
@@ -506,7 +601,7 @@ const THEMED = {"1":[{"theme":"仕事","en":"I'm gonna finish this report before
 <script>
 "use strict";
 const KEY="otopack.m1", GOAL=10, RING=2*Math.PI*56;
-let S={}, cur=null, filter="all", T=null, VOICES=[];
+let S={}, cur=null, filter="all", T=null, Q=null, qTimer=null, VOICES=[];
 const seen={p1:false,p2:false};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -515,7 +610,7 @@ const pad=n=>String(n).padStart(3,"0");
 
 /* ── store ── */
 function load(){
-  const base={v:1,pkgs:{},days:{},today:{date:"",nos:[]},voice:"Samantha",lastBackup:""};
+  const base={v:1,pkgs:{},days:{},today:{date:"",nos:[]},voice:"Samantha",lastBackup:"",qsec:3,qsnd:true};
   try{S=Object.assign(base,JSON.parse(localStorage.getItem(KEY))||{});}catch{S=base;}
 }
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch{}};
@@ -579,7 +674,7 @@ $("nav").innerHTML=TABS.map(([k,i,l])=>
 function show(v){
   document.querySelectorAll(".view").forEach(m=>m.classList.toggle("on",m.id==="v-"+v));
   document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.go===v));
-  speechSynthesis.cancel(); scrollTo({top:0});
+  speechSynthesis.cancel(); clearInterval(qTimer); scrollTo({top:0});
 }
 $("nav").onclick=e=>{
   const b=e.target.closest("[data-go]"); if(!b)return;
@@ -822,19 +917,25 @@ function pool(r){
   const o=[];
   cleared().forEach(p=>{
     const my=(rec(p.no).my?.en||"").trim();
+    const mj=(rec(p.no).my?.ja||"").trim();
+    const myItem=()=>({en:my,ja:mj||"（自分ごとの例文）",hasJa:!!mj,no:p.no,mine:true});
     if(r==="my"){                                  // 自分で作った例文だけ
-      if(my)o.push({en:my,ja:rec(p.no).my.ja||"自分ごとの例文",no:p.no,mine:true});
+      if(my)o.push(myItem());
       return;
     }
     if(r!=="all"&&p.level!==+r)return;              // レベルで絞る
-    p.examples.forEach(e=>o.push({en:e.en,ja:e.ja,no:p.no}));
-    if(my)o.push({en:my,ja:rec(p.no).my.ja||"自分ごとの例文",no:p.no,mine:true});
+    p.examples.forEach(e=>o.push({en:e.en,ja:e.ja,hasJa:true,no:p.no}));
+    if(my)o.push(myItem());
   });
   return o;
 }
+let mode="quick";                    // quick=クイックレスポンス / listen=リスニング
+/* クイックレスポンスは日本語を見て答えるため、日本語のない例文は出さない */
+const activePool=r=>mode==="quick"?pool(r).filter(q=>q.hasJa):pool(r);
+
 function renderRange(){
   $("t-range").innerHTML=RANGES.map(([k,l])=>{
-    const n=pool(k).length;
+    const n=activePool(k).length;
     return `<button class="chip${k===range?" on":""}" data-r="${k}"${n?"":" disabled"}>`+
            `${l}<small>${n}</small></button>`;
   }).join("");
@@ -847,24 +948,115 @@ $("t-range").onclick=e=>{
   if(!b||b.disabled)return;
   range=b.dataset.r; testHome();
 };
+$("t-modes").onclick=e=>{
+  const b=e.target.closest("[data-m]"); if(!b)return;
+  mode=b.dataset.m; testHome();
+};
 function testHome(){
+  document.querySelectorAll("#t-modes .mode").forEach(b=>
+    b.classList.toggle("on",b.dataset.m===mode));
+  $("q-opts").classList.toggle("hide",mode!=="quick");
+  $("t-desc").textContent = mode==="quick"
+    ? "日本語を見て、制限時間内に声に出して英語で言います。お手本と見比べて自分で採点します。"
+    : "聞こえた英文を書きとります。大文字・句読点・アポストロフィの違いは正解として扱います。";
+  $("q-sec").value=String(S.qsec??3);
+  $("q-snd").classList.toggle("on",S.qsnd!==false);
   renderRange();
-  const n=pool().length, total=pool("all").length;
+  const n=activePool().length, total=activePool("all").length;
   $("t-avail").textContent = total
     ? (n?`この範囲の出題対象：${n} 件`:"この範囲にはまだ出題できる例文がありません")
     : "まずは音のパッケージをクリアしてください";
   $("t-start").disabled=!n;
-  $("t-box").classList.add("hide"); $("t-end").classList.add("hide");
+  ["t-box","t-end","q-box","q-end"].forEach(id=>$(id).classList.add("hide"));
   $("t-home").classList.remove("hide");
 }
-$("t-start").onclick=()=>{
-  const src=pool();
-  if(!src.length)return;
-  T={qs:src.sort(()=>Math.random()-.5).slice(0,10),i:0,sc:0,bad:[]};
-  $("t-home").classList.add("hide"); $("t-end").classList.add("hide");
-  $("t-box").classList.remove("hide");
-  $("t-n").textContent=T.qs.length; nextQ();
+$("q-sec").onchange=e=>{S.qsec=+e.target.value;save();};
+$("q-snd").onclick=()=>{
+  S.qsnd=!(S.qsnd!==false);
+  $("q-snd").classList.toggle("on",S.qsnd);
+  save();
 };
+$("t-start").onclick=()=>{
+  const src=activePool();
+  if(!src.length)return;
+  const qs=src.sort(()=>Math.random()-.5).slice(0,10);
+  $("t-home").classList.add("hide");
+  if(mode==="listen"){
+    T={qs,i:0,sc:0,bad:[]};
+    $("t-box").classList.remove("hide"); $("t-n").textContent=qs.length; nextQ();
+  }else{
+    Q={qs,i:0,pts:0,bad:[]};
+    $("q-box").classList.remove("hide"); $("q-n").textContent=qs.length; qAsk();
+  }
+};
+
+/* ── クイックレスポンス ── */
+const QR=2*Math.PI*52;
+function qAsk(){
+  clearInterval(qTimer);
+  $("q-i").textContent=Q.i+1; $("q-sc").textContent=Q.pts;
+  $("q-ask").classList.remove("hide"); $("q-ans").classList.add("hide");
+  $("q-ja").textContent=Q.qs[Q.i].ja;
+  const sec=+(S.qsec??3), ring=$("q-ring"), num=$("q-num");
+  if(!sec){                                   // 制限時間なし
+    ring.style.strokeDashoffset=0; num.className="qnum go"; num.textContent="どうぞ";
+    return;
+  }
+  num.className="qnum";
+  let left=sec*1000;
+  const draw=()=>{
+    num.textContent=Math.max(0,Math.ceil(left/1000));
+    ring.style.strokeDashoffset=QR*(1-left/(sec*1000));
+  };
+  draw();
+  qTimer=setInterval(()=>{
+    left-=100;
+    if(left<=0){clearInterval(qTimer);qReveal();return;}
+    draw();
+  },100);
+}
+function qReveal(){
+  clearInterval(qTimer);
+  const q=Q.qs[Q.i], src=PKGS[q.no-1];
+  $("q-ask").classList.add("hide"); $("q-ans").classList.remove("hide");
+  $("q-ja2").textContent=q.ja;
+  $("q-en").textContent=q.en;
+  $("q-src").innerHTML=`<span class="qtag num">No.${pad(q.no)}</span>`+
+    `<span class="qtag">レベル${src.level}</span>`+
+    (q.mine?'<span class="qtag">自分ごと例文</span>':"")+
+    `<span class="qpat en">${esc(src.pattern)}</span>`+
+    `<span class="qmean">${esc(src.meaning)}</span>`;
+  const snd=S.qsnd!==false;
+  $("q-replay").classList.toggle("hide",!snd);
+  if(snd)say(q.en,1);
+}
+$("q-reveal").onclick=qReveal;
+$("q-replay").onclick=()=>Q&&say(Q.qs[Q.i].en,1);
+document.querySelector("#q-ans .selfrow").onclick=e=>{
+  const b=e.target.closest("[data-s]"); if(!b||!Q)return;
+  const v=+b.dataset.s, q=Q.qs[Q.i];
+  if(v===2)Q.pts++; else Q.bad.push(Object.assign({mk:v===1?"△":"✗"},q));
+  speechSynthesis.cancel();
+  Q.i++;
+  if(Q.i<Q.qs.length)qAsk(); else qEnd();
+};
+function qEnd(){
+  clearInterval(qTimer);
+  $("q-box").classList.add("hide"); $("q-end").classList.remove("hide");
+  const pct=Math.round(Q.pts/Q.qs.length*100);
+  $("q-title").textContent = pct===100?"🏆 全問すぐに言えました"
+    : pct>=70?"👏 いい反応でした" : "🔁 くり返して口を慣らしましょう";
+  $("q-body").innerHTML=
+    `<div class="big num" style="margin:12px 0">${Q.pts}`+
+    `<s style="font-size:16px;color:var(--muted);text-decoration:none"> / ${Q.qs.length}</s></div>`+
+    (Q.bad.length
+      ? `<div class="eyebrow" style="margin-top:8px">もう一度練習したい文</div>`+
+        Q.bad.map(w=>`<div class="kv"><span>${w.mk} ${esc(w.ja)}</span>`+
+          `<span class="en">${esc(w.en)}</span></div>`).join("")
+      : `<p class="muted" style="text-align:center">すべてすぐに言えました。</p>`);
+  mark("t"); save();
+}
+$("q-again").onclick=()=>{testHome();$("t-start").click();};
 function nextQ(){
   $("t-i").textContent=T.i+1; $("t-sc").textContent=T.sc;
   $("tin").value=""; $("t-res").innerHTML=""; $("t-check").disabled=false;
@@ -941,7 +1133,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>クリア済み</span><span class="num">${cleared().length} / 100</span></div>
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
-    <div class="kv"><span>この版</span><span class="num">20260816-1323</span></div>
+    <div class="kv"><span>この版</span><span class="num">20260816-1335</span></div>
     <label class="lbl">バックアップ（消失に備える）</label>
     <p class="muted" id="bkstat" style="margin:0 0 8px"></p>
     <div class="btnrow">
