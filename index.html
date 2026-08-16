@@ -169,6 +169,15 @@ button{cursor:pointer;border:0;background:none}
       color:var(--muted);border-radius:99px;padding:8px 15px;font-size:12.5px;
       font-weight:700;min-height:38px}
 .chip.on{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.chip[disabled]{opacity:.35}
+.chip small{opacity:.6;margin-left:4px;font-weight:700}
+/* 答え合わせに出す出典（No.・レベル・構文・意味） */
+.qsrc{margin-top:11px;padding-top:11px;border-top:1px solid var(--line);
+      display:flex;flex-wrap:wrap;gap:6px}
+.qtag{font-size:10px;font-weight:800;letter-spacing:.05em;padding:3px 8px;
+      border-radius:99px;background:var(--sunk);color:var(--muted)}
+.qpat{width:100%;font-size:16px;font-weight:700;line-height:1.35;margin-top:3px}
+.qmean{width:100%;font-size:12.5px;color:var(--muted);line-height:1.5}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .dc{position:relative;background:var(--surface);border:1px solid var(--line);
     border-radius:13px;padding:11px 10px 10px;min-height:96px;text-align:left;
@@ -390,8 +399,10 @@ textarea,input[type=text]{width:100%;background:var(--sunk);border:1px solid var
   <section class="card" id="t-home">
     <div class="eyebrow">リスニングテスト</div>
     <h2 style="margin:2px 0 6px">聞こえた英文を入力します</h2>
-    <p class="muted" style="margin:0 0 12px">クリア済みの例文と、自分で作った例文から出題されます。大文字と句読点の違いは正解として扱います。</p>
-    <button class="btn" id="t-start">はじめる</button>
+    <p class="muted" style="margin:0 0 12px">クリア済みの例文と、自分で作った例文から出題されます。大文字・句読点・アポストロフィの違いは正解として扱います。</p>
+    <div class="eyebrow" style="margin-bottom:7px">出題する範囲</div>
+    <div class="chips" id="t-range"></div>
+    <button class="btn" id="t-start" style="margin-top:13px">はじめる</button>
     <div class="muted" id="t-avail" style="text-align:center;margin-top:8px"></div>
   </section>
 
@@ -709,24 +720,51 @@ function party(p){
 }
 
 /* ── test ── */
-function pool(){
+const RANGES=[["all","すべて"],["1","レベル1"],["2","レベル2"],
+              ["3","レベル3"],["4","レベル4"],["my","自分ごと"]];
+let range="all";
+
+function pool(r){
+  r=r??range;
   const o=[];
   cleared().forEach(p=>{
-    p.examples.forEach(e=>o.push({en:e.en,ja:e.ja,no:p.no}));
     const my=(rec(p.no).my?.en||"").trim();
-    if(my)o.push({en:my,ja:rec(p.no).my.ja||"自分ごとの例文",no:p.no});
+    if(r==="my"){                                  // 自分で作った例文だけ
+      if(my)o.push({en:my,ja:rec(p.no).my.ja||"自分ごとの例文",no:p.no,mine:true});
+      return;
+    }
+    if(r!=="all"&&p.level!==+r)return;              // レベルで絞る
+    p.examples.forEach(e=>o.push({en:e.en,ja:e.ja,no:p.no}));
+    if(my)o.push({en:my,ja:rec(p.no).my.ja||"自分ごとの例文",no:p.no,mine:true});
   });
   return o;
 }
+function renderRange(){
+  $("t-range").innerHTML=RANGES.map(([k,l])=>{
+    const n=pool(k).length;
+    return `<button class="chip${k===range?" on":""}" data-r="${k}"${n?"":" disabled"}>`+
+           `${l}<small>${n}</small></button>`;
+  }).join("");
+}
+$("t-range").onclick=e=>{
+  const b=e.target.closest("[data-r]");
+  if(!b||b.disabled)return;
+  range=b.dataset.r; testHome();
+};
 function testHome(){
-  const n=pool().length;
-  $("t-avail").textContent=n?`出題できる例文：${n} 件`:"まずは音のパッケージをクリアしてください";
+  renderRange();
+  const n=pool().length, total=pool("all").length;
+  $("t-avail").textContent = total
+    ? (n?`この範囲の出題対象：${n} 件`:"この範囲にはまだ出題できる例文がありません")
+    : "まずは音のパッケージをクリアしてください";
   $("t-start").disabled=!n;
   $("t-box").classList.add("hide"); $("t-end").classList.add("hide");
   $("t-home").classList.remove("hide");
 }
 $("t-start").onclick=()=>{
-  T={qs:pool().sort(()=>Math.random()-.5).slice(0,10),i:0,sc:0,bad:[]};
+  const src=pool();
+  if(!src.length)return;
+  T={qs:src.sort(()=>Math.random()-.5).slice(0,10),i:0,sc:0,bad:[]};
   $("t-home").classList.add("hide"); $("t-end").classList.add("hide");
   $("t-box").classList.remove("hide");
   $("t-n").textContent=T.qs.length; nextQ();
@@ -761,10 +799,18 @@ function judge(skip){
   const got=new Set(u.split(" "));
   const marked=q.en.split(" ").map(w=>
     `<span class="w${got.has(norm(w))?"":" miss"}">${esc(w)}</span>`).join(" ");
+  const src=PKGS[q.no-1];
   $("t-res").innerHTML=`<div class="judge ${ok?"ok":"ng"}">
       <b>${ok?"✓ 正解です":skip?"正解はこちらです":"✗ おしい"}</b>
       <div class="a en">${marked}</div>
-      <div class="muted" style="margin-top:4px">${esc(q.ja)}　No.${pad(q.no)}</div>
+      <div class="muted" style="margin-top:4px">${esc(q.ja)}</div>
+      <div class="qsrc">
+        <span class="qtag num">No.${pad(q.no)}</span>
+        <span class="qtag">レベル${src.level}</span>
+        ${q.mine?'<span class="qtag">自分ごと例文</span>':""}
+        <span class="qpat en">${esc(src.pattern)}</span>
+        <span class="qmean">${esc(src.meaning)}</span>
+      </div>
     </div>`;
   const b=document.createElement("button");
   b.className="btn"; b.style.marginTop="12px";
@@ -779,7 +825,8 @@ function endTest(){
   $("t-body").innerHTML=
     `<div class="big num" style="margin:12px 0">${T.sc}<s style="font-size:16px;color:var(--muted);text-decoration:none"> / ${T.qs.length}</s></div>`+
     (T.bad.length?`<div class="eyebrow" style="margin-top:8px">聞き取れなかった例文</div>`+
-      T.bad.map(w=>`<div class="kv"><span>${esc(w.ja)}</span><span class="en">${esc(w.en)}</span></div>`).join("")
+      T.bad.map(w=>`<div class="kv"><span>No.${pad(w.no)} ${esc(PKGS[w.no-1].pattern)}</span>`+
+        `<span class="en">${esc(w.en)}</span></div>`).join("")
       :`<p class="muted" style="text-align:center">すべて聞き取れました。</p>`);
   S.days[day()]=true; save();
 }
@@ -798,7 +845,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>クリア済み</span><span class="num">${cleared().length} / 100</span></div>
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
-    <div class="kv"><span>この版</span><span class="num">20260814-0958</span></div>
+    <div class="kv"><span>この版</span><span class="num">20260816-1305</span></div>
     <label class="lbl">バックアップ（消失に備える）</label>
     <p class="muted" id="bkstat" style="margin:0 0 8px"></p>
     <div class="btnrow">
