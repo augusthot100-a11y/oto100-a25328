@@ -1070,6 +1070,7 @@ $("t-skip").onclick=()=>judge(true);
 /* 答え合わせの表記ゆれ吸収。マイク入力を前提に、次を同じものとして扱う。
    ・アポストロフィの種類と有無（I'm / I’m / I`m / Im）
    ・短縮形とそうでない形（I'm ⇔ I am、don't ⇔ do not、gonna ⇔ going to）
+   ・単数形と複数形の違い（a book ⇔ books、child ⇔ children）
    ・冠詞（a / an / the）の違い ← これだけは「惜しい」と表示したうえで正解にする */
 const APOS=/[‘’‛ʼʹ′‵`´＇]/g;
 const CONTRACTIONS=[
@@ -1088,6 +1089,22 @@ const CONTRACTIONS=[
   ["shouldn't","should not"],["can't","cannot"],["mustn't","must not"]
 ].map(([a,b])=>[new RegExp("\\b"+a+"\\b","g"),b]);
 
+/* 単数形・複数形の違いを吸収する。正解側と入力側に同じ処理をかけるため、
+   多少ざっくり削っても「正しいのに不正解」にはならない。 */
+const IRREGULAR={children:"child",people:"person",men:"man",women:"woman",
+  feet:"foot",teeth:"tooth",mice:"mouse",geese:"goose",lives:"life",
+  knives:"knife",wives:"wife",leaves:"leaf",halves:"half",selves:"self",
+  shelves:"shelf",thieves:"thief"};
+function singular(w){
+  if(IRREGULAR[w])return IRREGULAR[w];
+  if(w.length<=3)return w;              // is / was / has / its などは触らない
+  if(/ss$/.test(w))return w;            // class / miss / less
+  if(/ies$/.test(w))return w.slice(0,-3)+"y";
+  if(/(ches|shes|sses|xes|zes|oes)$/.test(w))return w.slice(0,-2);
+  if(/s$/.test(w))return w.slice(0,-1);
+  return w;
+}
+
 /* mode="expand" は短縮形をほどく。"plain" はアポストロフィを落とすだけ。
    両方で見比べるため、片方で取りこぼしても他方が拾う。 */
 function canon(s,mode){
@@ -1100,7 +1117,8 @@ function canon(s,mode){
     t=t.replace(/\bgonna\b/g,"going to").replace(/\bwanna\b/g,"want to")
        .replace(/\bgotta\b/g,"got to").replace(/\bcan not\b/g,"cannot");
   }
-  return t.replace(/'/g,"").replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
+  return t.replace(/'/g,"").replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim()
+          .split(" ").map(singular).join(" ");
 }
 const ART=new Set(["a","an","the"]);
 const ARTICLE=/\b(a|an|the)\b/g;
@@ -1183,7 +1201,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
     <div class="kv"><span>この版</span>
-      <span class="num">v1.7.1 <small style="opacity:.55;font-weight:400">20260825-0754</small></span></div>
+      <span class="num">v1.8.0 <small style="opacity:.55;font-weight:400">20260923-2349</small></span></div>
     <div class="kv"><span>更新履歴</span>
       <span><a href="https://github.com/augusthot100-a11y/oto100-a25328/blob/main/CHANGELOG.md" target="_blank" rel="noopener"
         style="color:var(--accent);font-weight:700">これまでの変更を見る</a></span></div>
