@@ -1072,6 +1072,7 @@ $("t-skip").onclick=()=>judge(true);
    ・短縮形とそうでない形（he'll ⇔ he will、don't ⇔ do not、gonna ⇔ going to）
    ・単数形と複数形の違い（book ⇔ books、child ⇔ children）
    ・数字と英語のつづり（10 ⇔ ten、25 ⇔ twenty five、1st ⇔ first）
+   ・同じ語の書き方の違い（OK ⇔ okay、kinda ⇔ kind of、colour ⇔ color）
    ・冠詞（a / an / the）の違い ← これだけは「惜しい」と表示したうえで正解にする */
 const APOS=/[‘’‛ʼʹ′‵`´＇]/g;
 
@@ -1083,7 +1084,8 @@ function expand(t,alt){
      .replace(/\bshan't\b/g,"shall not")
      .replace(/\bain't\b/g,"is not")
      .replace(/\blet's\b/g,"let us")
-     .replace(/\bi'm\b/g,"i am");
+     .replace(/\bi'm\b/g,"i am")
+     .replace(/'cause\b/g,"because");
   t=t.replace(/\b([a-z]+)n't\b/g,"$1 not");
   t=t.replace(/\b([a-z]+)'ll\b/g,"$1 will")
      .replace(/\b([a-z]+)'ve\b/g,"$1 have")
@@ -1149,6 +1151,39 @@ function numify(t){
   return out.join(" ");
 }
 
+/* 同じ語の書き方の違いを1つにそろえる。正解側と入力側に同じ処理をかけるので、
+   多少おおざっぱにそろえても「正しいのに不正解」にはならない。 */
+const PHRASE=[
+  [/\bo k\b/g,"ok"],[/\bokay\b/g,"ok"],[/\bokey\b/g,"ok"],
+  [/\bkinda\b/g,"kind of"],[/\bsorta\b/g,"sort of"],[/\boutta\b/g,"out of"],
+  [/\blemme\b/g,"let me"],[/\bgimme\b/g,"give me"],[/\bdunno\b/g,"do not know"],
+  [/\bcuz\b/g,"because"],[/\b(?:til|till)\b/g,"until"],
+  [/\balright\b/g,"all right"],[/\banymore\b/g,"any more"],
+  [/\bgoodbye\b/g,"good bye"],[/\be mail\b/g,"email"],[/\bon line\b/g,"online"],
+  [/\bawhile\b/g,"a while"],[/\beveryday\b/g,"every day"],
+  [/\bsometime\b/g,"some time"],[/\byea\b/g,"yeah"]];
+
+/* イギリス式のつづり。規則にできないものだけ並べる */
+const UK={colour:"color",favour:"favor",favourite:"favorite",flavour:"flavor",
+  honour:"honor",humour:"humor",labour:"labor",neighbour:"neighbor",
+  behaviour:"behavior",rumour:"rumor",odour:"odor",saviour:"savior",
+  vapour:"vapor",endeavour:"endeavor",parlour:"parlor",harbour:"harbor",
+  centre:"center",theatre:"theater",metre:"meter",litre:"liter",fibre:"fiber",
+  calibre:"caliber",sombre:"somber",spectre:"specter",
+  practise:"practice",licence:"license",defence:"defense",offence:"offense",
+  pretence:"pretense",grey:"gray",cheque:"check",aluminium:"aluminum",
+  pyjamas:"pajamas",mum:"mom",maths:"math"};
+
+function variants(t){
+  for(const [re,to] of PHRASE) t=t.replace(re,to);
+  return t.split(" ").map(w=>{
+    if(UK[w]) return UK[w];
+    // realise → realize、travelling → traveling。surprise のような別語も
+    // 同じように変わるが、両側に同じ処理をかけるので判定はずれない
+    return w.replace(/is(e|ed|es|ing|ation)$/,"iz$1").replace(/ll(ed|ing|er|or)$/,"l$1");
+  }).join(" ");
+}
+
 /* mode: "expand"=短縮形をほどく / "alt"='s と 'd を別の読みでほどく
         / "plain"=ほどかずアポストロフィだけ落とす */
 function canon(s,mode){
@@ -1158,8 +1193,9 @@ function canon(s,mode){
     .toLowerCase();
   if(mode!=="plain") t=expand(t,mode==="alt");
   t=t.replace(/'/g,"").replace(/(\d),(?=\d)/g,"$1")   // 1,000 を 1000 として読む
+     .replace(/%/g," percent ").replace(/&/g," and ")
      .replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
-  return numify(t).split(" ").map(singular).join(" ");
+  return variants(numify(t)).split(" ").map(singular).join(" ");
 }
 const MODES=["expand","alt","plain"];
 const forms=s=>MODES.map(m=>canon(s,m));
@@ -1247,7 +1283,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
     <div class="kv"><span>この版</span>
-      <span class="num">v1.9.0 <small style="opacity:.55;font-weight:400">20260928-2356</small></span></div>
+      <span class="num">v1.10.0 <small style="opacity:.55;font-weight:400">20260929-0121</small></span></div>
     <div class="kv"><span>更新履歴</span>
       <span><a href="https://github.com/augusthot100-a11y/oto100-a25328/blob/main/CHANGELOG.md" target="_blank" rel="noopener"
         style="color:var(--accent);font-weight:700">これまでの変更を見る</a></span></div>

@@ -7,6 +7,54 @@
 
 ---
 
+## v1.10.0 — 2026-09-29
+
+### 変更
+
+- テストの答え合わせで、**同じ語の書き方の違いもどちらも正解**にしました。
+
+  **OK系** — `OK` ⇔ `ok` ⇔ `O.K.` ⇔ `okay` ⇔ `okey`
+  （教材の No.033「Is it okay if I ~?」と No.035「Are you okay with ~?」を
+  `OK` と答えても正解になります）
+
+  **くだけた発音のつづり** — `kinda` ⇔ `kind of`、`sorta` ⇔ `sort of`、
+  `outta` ⇔ `out of`、`lemme` ⇔ `let me`、`gimme` ⇔ `give me`、
+  `dunno` ⇔ `don't know`、`'cause`・`cuz` ⇔ `because`、`till`・`til` ⇔ `until`
+
+  **一語で書くか二語で書くか** — `alright` ⇔ `all right`、`anymore` ⇔ `any more`、
+  `email` ⇔ `e-mail`、`online` ⇔ `on line`、`awhile` ⇔ `a while`、
+  `everyday` ⇔ `every day`、`sometime` ⇔ `some time`、`goodbye` ⇔ `good bye`
+
+  **アメリカつづりとイギリスつづり** — `color` ⇔ `colour`、`favorite` ⇔ `favourite`、
+  `center` ⇔ `centre`、`theater` ⇔ `theatre`、`neighbor` ⇔ `neighbour`、
+  `gray` ⇔ `grey`、`practice` ⇔ `practise`、`realize` ⇔ `realise` のような
+  `-ize`／`-ise` 全般、`traveling` ⇔ `travelling` のような l の数
+
+  **記号と語** — `%` ⇔ `percent`、`&` ⇔ `and`
+
+- `well-known` ⇔ `well known` のようなハイフンの有無は、以前から同じ扱いです。
+
+### そろえないもの
+
+- `someone` と `somebody`、`among` と `amongst` は**別の語**なので、
+  これまでどおり区別します。ここまでそろえると、聞き取れていなくても
+  正解になってしまい、テストとして働かなくなるためです。
+- `yeah` ⇔ `yea` は同じ扱いにしましたが、`yep` `yup` は別の語として残しています。
+
+### 備考
+
+- 教材と生成データの全1,000文で、次を確認しました。
+  - 自分自身と照らして正解になる（1000/1000）
+  - 上の書き方に入れ替えても正解になる（112/112）
+  - 数を入れ替えても正解になる（20/20）／短縮形を展開しても正解になる（348/348）
+  - **別々の999文をすべての組み合わせで突き合わせ、取り違えて正解になるものが0件**
+    （判定をゆるめすぎていないことの確認）
+- `toward` と `towards` は、v1.8.0 の複数形の処理（語尾の s を落とす）によって
+  以前から同じ扱いになっています。
+- `$5` と `five dollars` は語順が逆になるため、そろえていません。
+
+---
+
 ## v1.9.0 — 2026-09-28
 
 ### 変更
