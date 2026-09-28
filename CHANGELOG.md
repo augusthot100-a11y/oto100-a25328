@@ -7,6 +7,38 @@
 
 ---
 
+## v1.9.0 — 2026-09-28
+
+### 変更
+
+- テストの答え合わせで、**数字と英語のつづりをどちらも正解**にしました。
+  - `10` ⇔ `ten`、`3` ⇔ `three`、`11` ⇔ `eleven`
+  - `25` ⇔ `twenty five`（`twenty-five` のようにハイフンでつないでも同じ）
+  - `200` ⇔ `two hundred`、`1000` ⇔ `a thousand`、`1,000` のような桁区切りも同じ扱い
+  - `1st` ⇔ `first`、`3rd` ⇔ `third` などの順番を表す語
+  - `30s` ⇔ `thirties`
+- 数字の違いは、これまでどおり不正解です（`ten` に対して `nine`、`30` に対して `13` など）。
+
+### 修正
+
+- **例文4件で、日本語訳の先頭の数字が英文の末尾にくっついていた**のを直しました。
+  教材PDFから読み取ったときの取りこぼしです。読み上げでも余分な数字が読まれていました。
+  - No.014 `I'm supposed to meet him at 3. 3` → `I'm supposed to meet him at 3.`／
+    訳を `3時に彼と会うことになってる。` に修正
+  - No.035 `Are you okay with meeting at 3? 3` → `Are you okay with meeting at 3?`／
+    訳を `3時に会うので大丈夫？` に修正
+  - No.045 `Can I go ahead and order for both of us?2` → `...for both of us?`／
+    訳を `2人分注文してしまっていいですか？` に修正
+  - No.069 `I'd say it takes about an hour. 1` → `I'd say it takes about an hour.`／
+    訳を `1時間くらいかかると思う。` に修正
+
+### 備考
+
+- 教材と生成データの全1,000文について、自分自身と照らして正解になること、
+  数を書き換えても正解になること、短縮形を展開しても正解になることを確認しました。
+
+---
+
 ## v1.8.1 — 2026-09-24
 
 ### 修正
