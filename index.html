@@ -266,6 +266,10 @@ button{cursor:pointer;border:0;background:none}
 .dc.got .tick{position:absolute;top:8px;right:9px;color:var(--accent);
               font-size:11px;font-weight:900}
 .dc.lock .p{color:var(--faint);letter-spacing:.2em}
+/* テストで間違えた回数。苦手なものがひと目で分かるようにする */
+.dc .mcount{margin-top:auto;align-self:flex-start;font-size:9.5px;font-weight:800;
+            padding:2px 7px;border-radius:99px;background:var(--sunk);color:var(--l4);
+            border:1px solid var(--l4)}
 
 /* ══ study ══════════════════════════════════════════════════════ */
 .pkghead{background:var(--surface);border:1px solid var(--line);border-radius:16px;
@@ -622,8 +626,12 @@ function load(){
   try{S=Object.assign(base,JSON.parse(localStorage.getItem(KEY))||{});}catch{S=base;}
 }
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch{}};
+/* テストで間違えた回数を数える。図鑑で苦手なものを見つけるために使う */
+function addMiss(no){ const r=rec(no); r.miss=(r.miss||0)+1; save(); }
+const miss=no=>rec(no).miss||0;
+
 function rec(no){
-  if(!S.pkgs[no]) S.pkgs[no]={reads:0,my:{en:"",ja:""},cleared:false,at:""};
+  if(!S.pkgs[no]) S.pkgs[no]={reads:0,my:{en:"",ja:""},cleared:false,at:"",miss:0};
   return S.pkgs[no];
 }
 const cleared=()=>PKGS.filter(p=>rec(p.no).cleared);
@@ -756,8 +764,9 @@ $("roll").onclick=()=>{
 };
 
 /* ── dex ── */
-const FILTERS=[["all","すべて"],["done","クリア済み"],["todo","未クリア"],
-               ["1","レベル1"],["2","レベル2"],["3","レベル3"],["4","レベル4"]];
+const FILTERS=[["all","すべて"],["miss","よく間違える"],["done","クリア済み"],
+               ["todo","未クリア"],["1","レベル1"],["2","レベル2"],
+               ["3","レベル3"],["4","レベル4"]];
 $("chips").innerHTML=FILTERS.map(([k,l])=>
   `<button class="chip${k==="all"?" on":""}" data-f="${k}">${l}</button>`).join("");
 $("chips").onclick=e=>{
@@ -769,12 +778,18 @@ $("chips").onclick=e=>{
 function dex(){
   $("d-done").textContent=cleared().length;
   const g=$("grid"); g.innerHTML="";
-  PKGS.filter(p=>{
+  let list=PKGS.filter(p=>{
     const c=rec(p.no).cleared;
+    if(filter==="miss")return miss(p.no)>0;
     if(filter==="done")return c; if(filter==="todo")return !c;
     if("1234".includes(filter))return p.level===+filter;
     return true;
-  }).forEach(p=>{
+  });
+  if(filter==="miss") list=list.slice().sort((a,b)=>miss(b.no)-miss(a.no));
+  if(filter==="miss"&&!list.length)
+    g.innerHTML='<p class="muted" style="grid-column:1/-1;text-align:center;padding:18px 0">'
+      +'まだ間違えた記録がありません。</p>';
+  list.forEach(p=>{
     const got=rec(p.no).cleared;
     const d=document.createElement("button");
     d.className="dc "+(got?"got":"lock");
@@ -782,7 +797,8 @@ function dex(){
       ${got?'<span class="tick">✓</span>':""}
       <span class="n num">NO.${pad(p.no)}</span>
       <span class="p en">${got?esc(p.pattern):"？？？"}</span>
-      <span class="m">${got?esc(p.meaning):"レベル"+p.level+"・未収集"}</span>`;
+      <span class="m">${got?esc(p.meaning):"レベル"+p.level+"・未収集"}</span>
+      ${miss(p.no)?`<span class="mcount">✗ ${miss(p.no)}回</span>`:""}`;
     d.onclick=()=>detail(p.no);
     g.appendChild(d);
   });
@@ -793,6 +809,7 @@ function detail(no){
     <p class="muted" style="margin:4px 0 12px">No.${pad(no)}　${rc.cleared?esc(p.meaning):"まだ収集していません"}</p>
     <div class="kv"><span>レベル</span><span>${p.level}</span></div>
     <div class="kv"><span>音読した回数</span><span class="num">${rc.reads} 回</span></div>
+    <div class="kv"><span>テストで間違えた回数</span><span class="num">${miss(no)} 回</span></div>
     <div class="kv"><span>自分ごと例文</span><span class="en">${rc.my?.en?esc(rc.my.en):"—"}</span></div>
     ${rc.cleared?p.examples.map(e=>`<div class="rev"><span class="j">${esc(e.ja)}</span><span class="e en">${esc(e.en)}</span></div>`).join(""):""}
     <button class="btn" id="go" style="margin-top:16px">この音のパッケージを学ぶ</button>`);
@@ -1044,6 +1061,7 @@ document.querySelector("#q-ans .selfrow").onclick=e=>{
   const b=e.target.closest("[data-s]"); if(!b||!Q)return;
   const v=+b.dataset.s, q=Q.qs[Q.i];
   if(v===2)Q.pts++; else Q.bad.push(Object.assign({mk:v===1?"△":"✗"},q));
+  if(v===0)addMiss(q.no);   // 「惜しい」は数えず、言えなかったものだけ数える
   speechSynthesis.cancel();
   Q.i++;
   if(Q.i<Q.qs.length)qAsk(); else qEnd();
@@ -1072,7 +1090,6 @@ function nextQ(){
 }
 $("t-play").onclick=()=>T&&say(T.qs[T.i].en,1);
 $("t-slow").onclick=()=>T&&say(T.qs[T.i].en,.7);
-$("tin").addEventListener("keydown",e=>{if(e.key==="Enter")$("t-check").click();});
 $("t-check").onclick=()=>judge(false);
 $("t-skip").onclick=()=>judge(true);
 /* 答え合わせの表記ゆれ吸収。マイク入力を前提に、次を同じものとして扱う。
@@ -1232,7 +1249,7 @@ function judge(skip){
   const q=T.qs[T.i];
   const v=skip?"wrong":verdict(q.en,$("tin").value);
   const ok=v!=="wrong";
-  if(ok){T.sc++; if(v==="article")T.art=(T.art||0)+1;} else T.bad.push(q);
+  if(ok){T.sc++; if(v==="article")T.art=(T.art||0)+1;} else {T.bad.push(q); addMiss(q.no);}
   $("t-check").disabled=true; $("t-sc").textContent=T.sc;
   const got=skip?new Set():tokens($("tin").value);
   const marked=q.en.split(" ").map(w=>{
@@ -1275,7 +1292,7 @@ function endTest(){
       :`<p class="muted" style="text-align:center">すべて聞き取れました。</p>`);
   mark("t"); save();
 }
-$("t-again").onclick=()=>$("t-start").click();
+$("t-again").onclick=()=>{testHome();$("t-start").click();};
 
 /* ── settings + データ移行 ── */
 $("gear").onclick=()=>{
@@ -1291,7 +1308,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
     <div class="kv"><span>この版</span>
-      <span class="num">v1.10.1 <small style="opacity:.55;font-weight:400">20260930-2325</small></span></div>
+      <span class="num">v1.11.0 <small style="opacity:.55;font-weight:400">20261007-2349</small></span></div>
     <div class="kv"><span>更新履歴</span>
       <span><a href="https://github.com/augusthot100-a11y/oto100-a25328/blob/main/CHANGELOG.md" target="_blank" rel="noopener"
         style="color:var(--accent);font-weight:700">これまでの変更を見る</a></span></div>
@@ -1335,7 +1352,7 @@ $("gear").onclick=()=>{
   $("exp").onclick=()=>{
     const slim={};                        // 中身のある記録だけ書き出す
     for(const[k,r]of Object.entries(S.pkgs))
-      if(r.reads||r.cleared||(r.my?.en||"").trim()||(r.my?.ja||"").trim()) slim[k]=r;
+      if(r.reads||r.cleared||r.miss||(r.my?.en||"").trim()||(r.my?.ja||"").trim()) slim[k]=r;
     const c=btoa(unescape(encodeURIComponent(JSON.stringify(
       {pkgs:slim,days:S.days}))));
     $("code").value=c; $("code").select();
@@ -1361,7 +1378,7 @@ $("gear").onclick=()=>{
 function slimPkgs(){
   const o={};
   for(const[k,r]of Object.entries(S.pkgs))
-    if(r.reads||r.cleared||(r.my?.en||"").trim()||(r.my?.ja||"").trim()) o[k]=r;
+    if(r.reads||r.cleared||r.miss||(r.my?.en||"").trim()||(r.my?.ja||"").trim()) o[k]=r;
   return o;
 }
 function daysSince(d){
