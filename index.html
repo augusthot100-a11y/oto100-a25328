@@ -333,11 +333,15 @@ textarea,input[type=text]{width:100%;background:var(--sunk);border:1px solid var
 .big{font-size:42px;font-weight:800;text-align:center;line-height:1.1}
 
 /* ══ nav ════════════════════════════════════════════════════════ */
+/* ながら学習の注意書き */
+.safety{display:flex;gap:8px;align-items:flex-start;background:var(--now-bg);
+        border:1px solid var(--now);border-radius:12px;padding:10px 12px;
+        font-size:12px;line-height:1.5;color:var(--ink)}
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;
      background:var(--surface);backdrop-filter:blur(14px);border-top:1px solid var(--line);
      padding-bottom:env(safe-area-inset-bottom)}
-.nav button{flex:1;padding:9px 0 10px;display:flex;flex-direction:column;
-            align-items:center;gap:3px;font-size:10.5px;font-weight:700;
+.nav button{flex:1;padding:9px 2px 10px;display:flex;flex-direction:column;
+            align-items:center;gap:3px;font-size:9.5px;font-weight:700;
             color:var(--faint);min-height:56px;justify-content:center}
 .nav button i{font-style:normal;font-size:19px;line-height:1}
 .nav button.on{color:var(--accent)}
@@ -603,6 +607,72 @@ textarea,input[type=text]{width:100%;background:var(--sunk);border:1px solid var
   </section>
 </div></main>
 
+<!-- ═══ ながら学習（耳だけ） ═══ -->
+<main id="v-run" class="view"><div class="wrap">
+  <section class="card" id="r-home">
+    <div class="eyebrow">ながら学習</div>
+    <h2>歩きながら・走りながら、耳と口だけで</h2>
+    <p class="muted" style="margin:4px 0 10px">日本語が流れたあと、間があきます。その間に自分で英語を言ってください。
+    すぐあとにお手本の英語が流れるので、答え合わせになります。画面は見なくて大丈夫です。</p>
+    <div class="safety">🎧 <span>片耳だけ、または骨伝導のイヤホンでお使いください。
+      周りの音が聞こえる状態で。</span></div>
+
+    <div class="eyebrow" style="margin:14px 0 7px">流す範囲</div>
+    <div class="chips" id="r-range"></div>
+
+    <div class="eyebrow" style="margin:14px 0 8px">流し方</div>
+    <div class="modes" id="r-ways">
+      <button class="mode on" data-w="make"><i>🗣</i><b>作る</b>
+        <small>日本語 → 間 → 英語</small></button>
+      <button class="mode" data-w="shadow"><i>🔁</i><b>くり返す</b>
+        <small>英語 → 間 → 真似る</small></button>
+    </div>
+
+    <div class="opts" style="margin:13px 0">
+      <span class="opt">間の長さ
+        <select id="r-gap">
+          <option value="auto">自動</option><option value="2">2秒</option>
+          <option value="4">4秒</option><option value="6">6秒</option>
+        </select></span>
+      <span class="opt">くり返し
+        <select id="r-rep"><option value="1">1回</option><option value="2">2回</option>
+          <option value="3">3回</option></select></span>
+      <span class="opt">速さ
+        <select id="r-rate"><option value="0.8">0.8倍</option><option value="1">1.0倍</option>
+          <option value="1.2">1.2倍</option></select></span>
+      <span class="opt">音読回数に数える
+        <button class="sw on" id="r-count" role="switch" aria-label="音読回数に数える"></button>
+      </span>
+    </div>
+
+    <button class="btn" id="r-start">▶ はじめる</button>
+    <div class="muted" id="r-avail" style="text-align:center;margin-top:8px"></div>
+
+    <div class="eyebrow" style="margin:18px 0 6px">はじめての方へ</div>
+    <p class="muted" style="margin:0 0 8px">iPhoneは画面を消すと読み上げが止まることがあります。
+    下のボタンで、ポケットに入れた状態で鳴り続けるか先に確かめられます。</p>
+    <button class="btn sub sm" id="r-check">📱 鳴り続けるか試す（30秒）</button>
+    <div class="muted" id="r-checkmsg" style="margin-top:8px"></div>
+  </section>
+
+  <section class="card hide" id="r-box">
+    <div class="tprog"><b class="num" id="r-i">1</b> / <span class="num" id="r-n">0</span> 文
+      　　音読 <b class="num" id="r-reads">0</b> 回</div>
+    <div class="qja" id="r-ja">—</div>
+    <div class="qen en" id="r-en" style="color:var(--accent)">—</div>
+    <div class="muted" id="r-meta" style="text-align:center">—</div>
+    <button class="btn" id="r-toggle" style="min-height:92px;margin-top:14px">⏸ 一時停止</button>
+    <p class="muted" style="text-align:center;margin:8px 0 0">画面のどこを触っても止まります</p>
+    <button class="btn sub sm" id="r-stop" style="margin:12px auto 0">終わる</button>
+  </section>
+
+  <section class="card hide" id="r-end">
+    <h2 id="r-title" style="text-align:center">おつかれさまでした</h2>
+    <div id="r-body"></div>
+    <button class="btn" id="r-again" style="margin-top:14px">もう一度</button>
+  </section>
+</div></main>
+
 <nav class="nav" id="nav"></nav>
 <div class="sheet hide" id="sheet"><div class="in" id="sheet-in"></div></div>
 
@@ -613,7 +683,7 @@ const THEMED = {"1":[{"theme":"仕事","en":"I'm gonna finish this report before
 <script>
 "use strict";
 const KEY="otopack.m1", GOAL=10, RING=2*Math.PI*56;
-let S={}, cur=null, filter="all", T=null, Q=null, qTimer=null, VOICES=[];
+let S={}, cur=null, filter="all", T=null, Q=null, qTimer=null, VOICES=[], JVOICES=[];
 const seen={p1:false,p2:false};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -622,7 +692,8 @@ const pad=n=>String(n).padStart(3,"0");
 
 /* ── store ── */
 function load(){
-  const base={v:1,pkgs:{},days:{},today:{date:"",nos:[]},voice:"Samantha",lastBackup:"",qsec:3,qsnd:true};
+  const base={v:1,pkgs:{},days:{},today:{date:"",nos:[]},voice:"Samantha",lastBackup:"",qsec:3,qsnd:true,
+    run:{range:"today",way:"make",gap:"auto",rep:2,rate:1,count:true}};
   try{S=Object.assign(base,JSON.parse(localStorage.getItem(KEY))||{});}catch{S=base;}
 }
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch{}};
@@ -670,7 +741,11 @@ function bestStreak(){
 }
 
 /* ── speech ── */
-function loadVoices(){VOICES=speechSynthesis.getVoices().filter(v=>v.lang.startsWith("en"));}
+function loadVoices(){
+  const a=speechSynthesis.getVoices();
+  VOICES=a.filter(v=>v.lang.startsWith("en"));
+  JVOICES=a.filter(v=>v.lang.startsWith("ja"));   // 日本語は別の声で読む
+}
 speechSynthesis.onvoiceschanged=loadVoices; loadVoices();
 const pickVoice=()=>VOICES.find(v=>v.name===S.voice)||VOICES.find(v=>v.name.startsWith("Samantha"))
   ||VOICES.find(v=>v.lang==="en-US")||VOICES[0];
@@ -683,11 +758,12 @@ function say(text,rate=1){
 }
 
 /* ── nav ── */
-const TABS=[["home","🎲","すごろく"],["dex","📗","図鑑"],
+const TABS=[["home","🎲","すごろく"],["dex","📗","図鑑"],["run","🏃","ながら"],
             ["test","🎧","テスト"],["cal","📅","記録"]];
 $("nav").innerHTML=TABS.map(([k,i,l])=>
   `<button data-go="${k}"><i>${i}</i>${l}</button>`).join("");
 function show(v){
+  if(v!=="run") stopRun(false);          // 別の画面に移ったら読み上げを止める
   document.querySelectorAll(".view").forEach(m=>m.classList.toggle("on",m.id==="v-"+v));
   document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.go===v));
   speechSynthesis.cancel(); clearInterval(qTimer); scrollTo({top:0});
@@ -696,7 +772,7 @@ $("nav").onclick=e=>{
   const b=e.target.closest("[data-go]"); if(!b)return;
   const v=b.dataset.go; show(v);
   if(v==="home")home(); if(v==="dex")dex();
-  if(v==="test")testHome(); if(v==="cal")renderCal();
+  if(v==="test")testHome(); if(v==="cal")renderCal(); if(v==="run")runHome();
 };
 
 /* ── home ── */
@@ -1294,6 +1370,218 @@ function endTest(){
 }
 $("t-again").onclick=()=>{testHome();$("t-start").click();};
 
+/* ── ながら学習（耳だけ） ────────────────────────────────
+   走行中は画面も手も使えない前提。設定は走り出す前に決め、
+   あとは読み上げだけで進む。途中で固まらないことを最優先にしている。 */
+const RRANGES=[["today","今日の3個"],["miss","よく間違える"],["todo","未クリア"],
+               ["done","クリア済み"],["all","すべて"]];
+let R=null, runTok=0, wakeLock=null, checking=false;
+
+const rset=()=>(S.run=S.run||{range:"today",way:"make",gap:"auto",rep:2,rate:1,count:true});
+
+function runItems(r){
+  const st=rset(); r=r??st.range;
+  let ps=PKGS;
+  if(r==="today"){
+    const nos=(S.today&&S.today.date===day()?S.today.nos:[])||[];
+    ps=PKGS.filter(p=>nos.includes(p.no));
+  }
+  else if(r==="miss") ps=PKGS.filter(p=>miss(p.no)>0).sort((a,b)=>miss(b.no)-miss(a.no));
+  else if(r==="todo") ps=PKGS.filter(p=>!rec(p.no).cleared).slice(0,10);  // 次に学ぶ10個まで
+  else if(r==="done") ps=PKGS.filter(p=>rec(p.no).cleared);
+  const o=[];
+  ps.forEach(p=>{
+    p.examples.forEach(e=>o.push({en:e.en,ja:e.ja,no:p.no}));
+    const my=(rec(p.no).my?.en||"").trim(), mj=(rec(p.no).my?.ja||"").trim();
+    if(my&&mj) o.push({en:my,ja:mj,no:p.no,mine:true});
+  });
+  if(r==="done"||r==="all") o.sort(()=>Math.random()-.5);
+  return o;
+}
+
+function runHome(){
+  const st=rset();
+  $("r-range").innerHTML=RRANGES.map(([k,l])=>{
+    const n=runItems(k).length;
+    return `<button class="chip${k===st.range?" on":""}" data-rr="${k}"${n?"":" disabled"}>`+
+           `${l}<small>${n}</small></button>`;
+  }).join("");
+  document.querySelectorAll("#r-ways .mode").forEach(b=>
+    b.classList.toggle("on",b.dataset.w===st.way));
+  $("r-gap").value=String(st.gap); $("r-rep").value=String(st.rep);
+  $("r-rate").value=String(st.rate);
+  $("r-count").classList.toggle("on",st.count!==false);
+  const n=runItems().length;
+  $("r-start").disabled=!n;
+  $("r-avail").textContent = n ? `この範囲の ${n} 文を、くり返し流します`
+    : st.range==="today" ? "先にすごろくの画面で「今日の3個」を選んでください"
+    : "流せる文がありません";
+  const on=$("r-range").querySelector(".chip.on");
+  if(on) on.scrollIntoView({block:"nearest",inline:"nearest"});
+  ["r-box","r-end"].forEach(id=>$(id).classList.add("hide"));
+  $("r-home").classList.remove("hide");
+}
+$("r-range").onclick=e=>{
+  const b=e.target.closest("[data-rr]"); if(!b||b.disabled)return;
+  rset().range=b.dataset.rr; save(); runHome();
+};
+$("r-ways").onclick=e=>{
+  const b=e.target.closest("[data-w]"); if(!b)return;
+  rset().way=b.dataset.w; save(); runHome();
+};
+$("r-gap").onchange=e=>{rset().gap=e.target.value;save();};
+$("r-rep").onchange=e=>{rset().rep=+e.target.value;save();};
+$("r-rate").onchange=e=>{rset().rate=+e.target.value;save();};
+$("r-count").onclick=()=>{
+  const st=rset(); st.count=!(st.count!==false);
+  $("r-count").classList.toggle("on",st.count); save();
+};
+
+const pickJa=()=>JVOICES.find(v=>v.name.startsWith("Kyoko"))
+  ||JVOICES.find(v=>v.lang==="ja-JP")||JVOICES[0];
+const estMs=(t,lang,rate)=>Math.round(
+  ((lang==="ja" ? String(t).length*140 : String(t).trim().split(/\s+/).length*400)+500)/(rate||1));
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* 読み上げが終わるまで待つ。画面が消えるなどで終了の合図が来ないことがあるため、
+   見込み時間を過ぎたら待つのをやめて次へ進める。走行中に固まらないようにするため。 */
+function speak(text,lang,rate){
+  return new Promise(res=>{
+    if(!text){res();return;}
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(String(text));
+    const v=lang==="ja"?pickJa():pickVoice();
+    if(v){u.voice=v;u.lang=v.lang;}
+    u.rate=rate||1;
+    let done=false;
+    const fin=()=>{if(!done){done=true;clearTimeout(t);res();}};
+    u.onend=fin; u.onerror=fin;
+    const t=setTimeout(fin,estMs(text,lang,u.rate)+4000);
+    speechSynthesis.speak(u);
+  });
+}
+function gapMs(it){
+  const st=rset();
+  if(st.gap!=="auto") return +st.gap*1000;
+  const w=String(it.en).trim().split(/\s+/).length;   // 英文が長いほど間を長く取る
+  return Math.min(9000,Math.max(1800,w*420+800));
+}
+
+/* 画面が消えると読み上げが止まるため、流しているあいだは点けたままにする */
+async function keepAwake(on){
+  try{
+    if(on){ if(!wakeLock&&navigator.wakeLock) wakeLock=await navigator.wakeLock.request("screen"); }
+    else if(wakeLock){ const w=wakeLock; wakeLock=null; await w.release(); }
+  }catch{}
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&R&&!R.paused) keepAwake(true);
+});
+
+$("r-start").onclick=()=>{
+  const items=runItems(); if(!items.length)return;
+  R={items,i:0,laps:0,reads:0,cleared:[],paused:false};
+  $("r-home").classList.add("hide"); $("r-end").classList.add("hide");
+  $("r-box").classList.remove("hide");
+  $("r-n").textContent=items.length; $("r-reads").textContent=0;
+  $("r-toggle").textContent="⏸ 一時停止";
+  keepAwake(true); runLoop();
+};
+
+async function runLoop(){
+  const my=++runTok;
+  const alive=()=>R&&runTok===my&&!R.paused;
+  while(alive()){
+    if(R.i>=R.items.length){R.i=0;R.laps++;}
+    const it=R.items[R.i], st=rset();
+    drawRun(it);
+    if(st.way==="make"){
+      await speak(it.ja,"ja",1);  if(!alive())return;
+      await wait(gapMs(it));      if(!alive())return;
+    }
+    for(let k=0;k<st.rep;k++){
+      await speak(it.en,"en",st.rate); if(!alive())return;
+      if(k<st.rep-1){ await wait(600); if(!alive())return; }
+    }
+    if(st.way==="shadow"){ await wait(gapMs(it)); if(!alive())return; }
+    const justCleared=countRead(it.no);
+    if(justCleared){ await speak(`${it.no}番、クリアしました。`,"ja",1); if(!alive())return; }
+    R.i++;
+  }
+}
+
+function countRead(no){
+  R.reads++; $("r-reads").textContent=R.reads;
+  mark("r");                       // カレンダーの印は、数え方の設定にかかわらずつける
+  let justCleared=false;
+  if(rset().count!==false){
+    const rc=rec(no); rc.reads++;
+    if(rc.reads>=GOAL&&!rc.cleared){
+      rc.cleared=true; rc.at=day(); mark("c"); R.cleared.push(no); justCleared=true;
+    }
+  }
+  save();
+  return justCleared;
+}
+
+function drawRun(it){
+  if(!it||!R)return;
+  $("r-i").textContent=R.i+1;
+  $("r-ja").textContent=it.ja;
+  $("r-en").textContent=it.en;
+  $("r-meta").textContent=`No.${pad(it.no)}　${PKGS[it.no-1].pattern}`
+    +(R.laps?`　／ ${R.laps+1}周目`:"");
+}
+
+function pauseRun(){
+  if(!R||R.paused)return;
+  R.paused=true; runTok++; speechSynthesis.cancel(); keepAwake(false);
+  $("r-toggle").textContent="▶ 再開する";
+}
+function resumeRun(){
+  if(!R||!R.paused)return;
+  R.paused=false; $("r-toggle").textContent="⏸ 一時停止";
+  keepAwake(true); runLoop();
+}
+$("r-box").onclick=e=>{
+  if(e.target.closest("#r-stop"))return;    // 「終わる」だけは一時停止にしない
+  if(R) R.paused?resumeRun():pauseRun();
+};
+$("r-stop").onclick=()=>stopRun(true);
+
+function stopRun(toEnd){
+  if(!R)return;
+  runTok++; speechSynthesis.cancel(); keepAwake(false);
+  const r=R; R=null;
+  $("r-box").classList.add("hide");
+  if(!toEnd){ $("r-home").classList.remove("hide"); return; }
+  $("r-end").classList.remove("hide");
+  $("r-title").textContent=r.cleared.length?"🎉 走りながらクリアしました":"おつかれさまでした";
+  $("r-body").innerHTML=
+    `<div class="big num" style="margin:12px 0">${r.reads}`+
+    `<s style="font-size:16px;color:var(--muted);text-decoration:none"> 文</s></div>`+
+    `<p class="muted" style="text-align:center;margin:-6px 0 8px">声に出す機会がこれだけありました</p>`+
+    (r.cleared.length
+      ? `<div class="eyebrow" style="margin-top:8px">クリアした音のパッケージ</div>`+
+        r.cleared.map(n=>`<div class="rev"><span class="j">No.${pad(n)}</span>`+
+          `<span class="e en">${esc(PKGS[n-1].pattern)}</span></div>`).join("")
+      : `<p class="muted" style="text-align:center">続けるほど、考える前に口が動くようになります。</p>`);
+  home(); dex();
+}
+$("r-again").onclick=()=>{runHome();$("r-start").click();};
+
+/* 画面を消しても鳴り続けるかを、使う人が自分で確かめるための30秒 */
+$("r-check").onclick=async()=>{
+  if(checking)return;
+  checking=true; $("r-check").disabled=true;
+  $("r-checkmsg").textContent="画面を消して、ポケットに入れてください。1から10まで数えます。"
+    +"10まで聞こえたら、画面を消したままでも使えます。";
+  for(let i=1;i<=10;i++){ await speak(String(i),"ja",1); await wait(2000); }
+  $("r-checkmsg").textContent="数え終わりました。途中で聞こえなくなった場合は、"
+    +"ながら学習のあいだ画面が自動で点いたままになります（電池を使います）。";
+  checking=false; $("r-check").disabled=false;
+};
+
 /* ── settings + データ移行 ── */
 $("gear").onclick=()=>{
   const vs=VOICES.map(v=>`<option value="${esc(v.name)}"${v.name===S.voice?" selected":""}>${esc(v.name)} (${v.lang})</option>`).join("");
@@ -1308,7 +1596,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
     <div class="kv"><span>この版</span>
-      <span class="num">v1.11.0 <small style="opacity:.55;font-weight:400">20261007-2349</small></span></div>
+      <span class="num">v1.12.0 <small style="opacity:.55;font-weight:400">20261008-0437</small></span></div>
     <div class="kv"><span>更新履歴</span>
       <span><a href="https://github.com/augusthot100-a11y/oto100-a25328/blob/main/CHANGELOG.md" target="_blank" rel="noopener"
         style="color:var(--accent);font-weight:700">これまでの変更を見る</a></span></div>
