@@ -776,16 +776,19 @@ function go(v){
 /* 結果画面に着く前に画面を移ると、そのテストは集計されずに消える */
 const testActive=()=>$("v-test").classList.contains("on")&&
   (!$("t-box").classList.contains("hide")||!$("q-box").classList.contains("hide"));
-$("nav").onclick=e=>{
-  const b=e.target.closest("[data-go]"); if(!b)return;
-  const v=b.dataset.go;
-  if(!testActive())return go(v);
+function guardTest(then,quitLabel){
+  if(!testActive())return then();
   sheet(`<h2 style="text-align:center">テストを中断しますか？</h2>
     <p class="muted" style="text-align:center;margin:6px 0 0">中断すると、ここまでの結果は記録されません。</p>
     <button class="btn" id="tc-keep" style="margin-top:18px">テストを続ける</button>
-    <button class="btn sub sm" id="tc-quit" style="margin:8px auto 0">中断して移動する</button>`);
+    <button class="btn sub sm" id="tc-quit" style="margin:8px auto 0">${quitLabel}</button>`);
   $("tc-keep").onclick=closeSheet;
-  $("tc-quit").onclick=()=>{closeSheet();go(v);};
+  $("tc-quit").onclick=()=>{closeSheet();then();};
+}
+$("nav").onclick=e=>{
+  const b=e.target.closest("[data-go]"); if(!b)return;
+  const v=b.dataset.go;
+  guardTest(()=>go(v),"中断して移動する");
 };
 
 /* ── home ── */
@@ -1124,6 +1127,7 @@ function qAsk(){
   };
   draw();
   qTimer=setInterval(()=>{
+    if(!$("sheet").classList.contains("hide"))return;   // 確認画面などを開いている間は時間を止める
     left-=100;
     if(left<=0){clearInterval(qTimer);qReveal();return;}
     draw();
@@ -1609,7 +1613,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
     <div class="kv"><span>この版</span>
-      <span class="num">v1.13.0 <small style="opacity:.55;font-weight:400">20261024-1030</small></span></div>
+      <span class="num">v1.13.1 <small style="opacity:.55;font-weight:400">20261024-1034</small></span></div>
     <div class="kv"><span>更新履歴</span>
       <span><a href="https://github.com/augusthot100-a11y/oto100-a25328/blob/main/CHANGELOG.md" target="_blank" rel="noopener"
         style="color:var(--accent);font-weight:700">これまでの変更を見る</a></span></div>
@@ -1812,11 +1816,11 @@ if("serviceWorker" in navigator){
 function showUpdate(reg){
   const b=$("upd"); if(!b) return;
   b.classList.remove("hide");
-  b.onclick=()=>{
+  b.onclick=()=>guardTest(()=>{
     b.textContent="更新しています…";
     if(reg.waiting) reg.waiting.postMessage("skipWaiting");
     else location.reload();
-  };
+  },"中断して更新する");
 }
 
 /* ── start ── */
