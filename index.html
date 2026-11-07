@@ -1024,6 +1024,15 @@ function party(p){
   $("st").onclick=closeSheet;
 }
 
+/* sort(()=>Math.random()-.5) は元の並びの影響が残り、先頭に近い文ばかり出るので使わない */
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.random()*(i+1)|0;
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
 /* ── test ── */
 const RANGES=[["all","すべて"],["1","レベル1"],["2","レベル2"],
               ["3","レベル3"],["4","レベル4"],["my","自分ごと"]];
@@ -1096,7 +1105,7 @@ $("q-snd").onclick=()=>{
 $("t-start").onclick=()=>{
   const src=activePool();
   if(!src.length)return;
-  const qs=src.sort(()=>Math.random()-.5).slice(0,10);
+  const qs=shuffle(src).slice(0,10);
   $("t-home").classList.add("hide");
   if(mode==="listen"){
     T={qs,i:0,sc:0,bad:[]};
@@ -1412,7 +1421,7 @@ function runItems(r){
     const my=(rec(p.no).my?.en||"").trim(), mj=(rec(p.no).my?.ja||"").trim();
     if(my&&mj) o.push({en:my,ja:mj,no:p.no,mine:true});
   });
-  if(r==="done"||r==="all") o.sort(()=>Math.random()-.5);
+  if(r==="done"||r==="all") shuffle(o);
   return o;
 }
 
@@ -1613,7 +1622,7 @@ $("gear").onclick=()=>{
     <div class="kv"><span>のべ音読回数</span><span class="num">${reads()} 回</span></div>
     <div class="kv"><span>学習した日数</span><span class="num">${Object.keys(S.days).length} 日</span></div>
     <div class="kv"><span>この版</span>
-      <span class="num">v1.13.1 <small style="opacity:.55;font-weight:400">20261024-1034</small></span></div>
+      <span class="num">v1.13.2 <small style="opacity:.55;font-weight:400">20261107-1217</small></span></div>
     <div class="kv"><span>更新履歴</span>
       <span><a href="https://github.com/augusthot100-a11y/oto100-a25328/blob/main/CHANGELOG.md" target="_blank" rel="noopener"
         style="color:var(--accent);font-weight:700">これまでの変更を見る</a></span></div>
